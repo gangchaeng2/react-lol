@@ -41,21 +41,11 @@ class SearchContainer extends Component {
         this.searchSummoner = this.searchSummoner.bind(this);
     }
 
-    /**
-      * 여러개의 ajax를 한번에 처리하는 방법
-    fetchSummonerInfo = async (name) => {
-        const info = await Promise.all([
-            service.getSummoner(name),
-            service.getRecentMatch()
-        ]);
-    }
-    */
-
     // 소환사 검색
     async getSummonerInfo(summonerName) {
         const summoner = await service.getSummoner(summonerName);
         // 소환사 정보
-        const {id, accountId, profileIconId, summonerLevel, revisionDate} = summoner.data;
+        const { id, accountId, profileIconId, summonerLevel, revisionDate } = summoner.data;
 
         const lastDate = new Date(revisionDate);
         const strDate = lastDate.toLocaleString();
@@ -65,7 +55,7 @@ class SearchContainer extends Component {
             return true;
         })
         .catch(function(error){
-            console.log(error);
+            console.log('this user not in game');
             return false;
         });
 

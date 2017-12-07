@@ -6,9 +6,9 @@ class TeamInfo extends Component {
     render() {
         return (
               <tr>
-              {this.props.team.map((championId) => {
+              {this.props.team.map((championId, i) => {
                   return (
-                    <td>
+                    <td key={i}>
                       <Image src={`http://iplol.co.kr/images/champ_2015/${championId}.png`} shape='rounded' size='mini' />
                     </td>
                   );
