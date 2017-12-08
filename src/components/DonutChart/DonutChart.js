@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import './DonutChart.css';
 
 const defaultProps = {
+    circleSize: 20,
     wins:8,
     valuelabel:'8승 / 12패',
     size:200,
@@ -18,7 +19,7 @@ class DonutChart extends Component {
       const halfsize = (this.props.size * 0.5);
       const radius = halfsize - (this.props.strokewidth * 0.5);
       const circumference = 2 * Math.PI * radius;
-      const strokeval = ((this.props.totalMatchInfo.wins * circumference) / 20);
+      const strokeval = ((this.props.totalMatchInfo.wins * circumference) / (this.props.totalMatchInfo.circleSize));
       const dashval = (strokeval + ' ' + circumference);
 
       const trackstyle = {strokeWidth: this.props.strokewidth};

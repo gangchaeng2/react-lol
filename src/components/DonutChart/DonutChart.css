@@ -1,11 +1,11 @@
 .donutchart-track{
   fill: transparent;
-  stroke: #DAE2E5;
-  stroke-width: 26;
+  stroke: #DB2828;
+  stroke-width: 20;
 }
 .donutchart-indicator {
   fill: transparent;
-  stroke: #009688;
+  stroke: #2185D0;
   stroke-width: 26;
   stroke-dasharray: 0 10000;
   transition: stroke-dasharray .3s ease;

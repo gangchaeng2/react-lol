@@ -1,7 +1,7 @@
 import  Cookies  from 'universal-cookie';
 import * as champ from './champions';
 
-export function recnetSummoner(summoner) {
+export function getRecentSummoer(summoner) {
     const cookies = new Cookies();
     let cookieArr = [];
     let cookieSummoners = cookies.get('summoners');
@@ -30,60 +30,60 @@ export function recnetSummoner(summoner) {
 
 // 경기 순서 정렬
 export function sortMatchList(matchList) {
-  matchList.sort(function(obj1, obj2) {
-    return obj1.gameCreation < obj2.gameCreation ? -1 : obj1.gameCreation > obj2.gameCreation ? 1 : 0;
-  });
+    matchList.sort(function(obj1, obj2) {
+      return obj1.gameCreation < obj2.gameCreation ? -1 : obj1.gameCreation > obj2.gameCreation ? 1 : 0;
+    });
 
-  return matchList;
+    return matchList;
 }
 
 // tier 숫자변환
 export function getTierNum(rank) {
-  let tierNum = 1;
+    let tierNum = 1;
 
-  switch(rank) {
-    case 'I':
-      tierNum = 1;
-      break;
-    case 'II':
-      tierNum = 2;
-      break;
-    case 'III':
-      tierNum = 3;
-      break;
-    case 'IV':
-      tierNum = 4;
-      break;
-    case 'V':
-      tierNum = 5;
-      break;
-    default:
-      break;
-  }
-  return tierNum;
+    switch(rank) {
+      case 'I':
+        tierNum = 1;
+        break;
+      case 'II':
+        tierNum = 2;
+        break;
+      case 'III':
+        tierNum = 3;
+        break;
+      case 'IV':
+        tierNum = 4;
+        break;
+      case 'V':
+        tierNum = 5;
+        break;
+      default:
+        break;
+    }
+    return tierNum;
 }
 
 // gameType
 export function getGameType(queueId) {
-  let gameType = null;
+    let gameType = null;
 
-  switch(queueId) {
-    case 420:
-      gameType = '솔로랭크';
-      break;
-    case 430:
-      gameType = '일반게임';
-      break;
-    case 440:
-      gameType = '자유랭크';
-      break;
-    case 450:
-      gameType = '칼바람 나락';
-      break;
-    default:
-      break;
-  }
-  return gameType;
+    switch(queueId) {
+      case 420:
+        gameType = '솔로랭크';
+        break;
+      case 430:
+        gameType = '일반게임';
+        break;
+      case 440:
+        gameType = '자유랭크';
+        break;
+      case 450:
+        gameType = '칼바람 나락';
+        break;
+      default:
+        break;
+    }
+    return gameType;
 }
 
 // 배열 중복제거
@@ -93,42 +93,43 @@ export function uniqueArr(arr) {
 
 // 레인 통계
 export function laneStats(matchList) {
-  let obj = {};
-  let total = 0;
-  let top = 0;
-  let jg = 0;
-  let mid = 0;
-  let ad = 0;
-  let sp = 0;
+    let obj = {};
+    let total = 0;
+    let top = 0;
+    let jg = 0;
+    let mid = 0;
+    let ad = 0;
+    let sp = 0;
 
-  matchList.map((match, i) => {
-    //if(match.queue === 420) {
-      total += 1;
-      if(match.lane === 'TOP') {
-          top += 1;
-      } else if(match.lane === 'JUNGLE') {
-          jg += 1;
-      } else if(match.lane === 'MID') {
-          mid += 1;
-      } else if(match.lane === 'BOTTOM' && match.role === 'DUO_SUPPORT') {
-          sp += 1;
-      } else {
-          ad += 1;
-      }
-    //}
-  });
+    matchList.map((match, i) => {
+      //if(match.queue === 420) {
+        total += 1;
+        if(match.lane === 'TOP') {
+            top += 1;
+        } else if(match.lane === 'JUNGLE') {
+            jg += 1;
+        } else if(match.lane === 'MID') {
+            mid += 1;
+        } else if(match.lane === 'BOTTOM' && match.role === 'DUO_SUPPORT') {
+            sp += 1;
+        } else {
+            ad += 1;
+        }
+      //}
+    });
 
-  obj = {
-      top: 100 * top / total + ' %',
-      jg : 100 * jg / total + ' %',
-      mid: 100 * mid / total + ' %',
-      ad: 100 * ad / total + ' %',
-      sp: 100 * sp / total + ' %'
-  }
+    obj = {
+        top: 100 * top / total + ' %',
+        jg : 100 * jg / total + ' %',
+        mid: 100 * mid / total + ' %',
+        ad: 100 * ad / total + ' %',
+        sp: 100 * sp / total + ' %'
+    }
 
-  return obj;
+    return obj;
 }
 
+// 게임정보 저장
 export function setmyInfoList(myInfo, champArr) {
     let championStats = [];
 
@@ -154,11 +155,11 @@ export function setmyInfoList(myInfo, champArr) {
       const champions = champ.getChampions();
 
       let championData = champions.filter(function(item){
-          return item.id === champion;
+          return item.title === champion;
       });
 
-      name = championData[0].name;
-      title = championData[0].title;
+      name = championData[0].text;
+      title = championData[0].key;
 
       if(info.length > 1) {
         info.map((obj2, j) => {
@@ -209,4 +210,9 @@ export function sortInfoList(infoList) {
   });
 
   return infoList;
+}
+
+// 숫자포맷
+export function setNumberFormat(number) {
+    return Number(number).toLocaleString('en');
 }

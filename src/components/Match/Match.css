@@ -6,3 +6,7 @@
 .Match p b {
     color: #212529;
 }
+
+table.detail-table {
+    margin: auto;
+}

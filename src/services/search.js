@@ -2,30 +2,42 @@ import axios from 'axios';
 
 // 소환사 정보
 export function getSummoner(name) {
-    return axios.get(`https://cors-anywhere.herokuapp.com/https://kr.api.riotgames.com/lol/summoner/v3/summoners/by-name/${name}?api_key=RGAPI-baac0937-b003-416c-9168-221984104cc6`);
+    return axios.get(`https://kr.api.riotgames.com/lol/summoner/v3/summoners/by-name/${name}?api_key=RGAPI-c860b5ba-07bc-4531-85d1-f7bd349e3636`);
 }
 
 // 소환사 레이팅
 export function getSummoneRating(summonerId) {
-    return axios.get(`https://cors-anywhere.herokuapp.com/https://kr.api.riotgames.com/lol/league/v3/positions/by-summoner/${summonerId}?api_key=RGAPI-baac0937-b003-416c-9168-221984104cc6`);
+    return axios.get(`https://kr.api.riotgames.com/lol/league/v3/positions/by-summoner/${summonerId}?api_key=RGAPI-c860b5ba-07bc-4531-85d1-f7bd349e3636`);
 }
 
 // 소환사의 최근게임 (20경기)
 export function getRecentMatch(accountId) {
-    return axios.get(`https://cors-anywhere.herokuapp.com/https://kr.api.riotgames.com/lol/match/v3/matchlists/by-account/${accountId}/recent?api_key=RGAPI-baac0937-b003-416c-9168-221984104cc6`);
+    return axios.get(`https://kr.api.riotgames.com/lol/match/v3/matchlists/by-account/${accountId}/recent?api_key=RGAPI-c860b5ba-07bc-4531-85d1-f7bd349e3636`);
 }
 
 // 현재 게임중
 export function getCurrentStatus(summonerId) {
-    return axios.get(`https://cors-anywhere.herokuapp.com/https://kr.api.riotgames.com/lol/spectator/v3/active-games/by-summoner/${summonerId}?api_key=RGAPI-baac0937-b003-416c-9168-221984104cc6`);
+    return axios.get(`https://kr.api.riotgames.com/lol/spectator/v3/active-games/by-summoner/${summonerId}?api_key=RGAPI-c860b5ba-07bc-4531-85d1-f7bd349e3636`);
 }
 
-// 게임결과
-export function getGameInfo(gameId) {
-    return axios.get(`https://cors-anywhere.herokuapp.com/https://kr.api.riotgames.com/lol/match/v3/matches/${gameId}?api_key=RGAPI-baac0937-b003-416c-9168-221984104cc6`);
-}
+// 게임 리스트 상세정보
+export async function getGameListInfo(list) {
+  const promises = [];
+  let matchList =[];
 
-// 챔피언 정보
-export function getChampionData(championId) {
-    return axios.get(`./champion.json`);
+  list.map((match, i) => {
+      promises.push(axios.get(`https://kr.api.riotgames.com/lol/match/v3/matches/${match.gameId}?api_key=RGAPI-c860b5ba-07bc-4531-85d1-f7bd349e3636`));
+  });
+
+  await axios.all(promises)
+  .then(function(results){
+    results.forEach(function(response) {
+        matchList = matchList.concat(response.data);
+      })
+  })
+  .catch(function(error){
+      alert('요청이 너무 많습니다. 잠시후 다시 검색해주세요');
+  });
+
+  return matchList;
 }

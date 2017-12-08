@@ -1,24 +1,23 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-class ChampStat extends Component {
-    render() {
-        return(
-            <div className="item">
-              <div className="ui tiny image">
-                <img src={`http://iplol.co.kr/images/champ_2015/${this.props.champList.champion}.png`} alt=""/>
+const ChampStat = ({ champList, getMatchListByChampion }) => {
+    return(
+        <div className="item">
+          <div className="ui tiny image">
+            <img src={`http://iplol.co.kr/images/champ_2015/${champList.champion}.png`} alt=""/>
+          </div>
+          <div className="content">
+              <a className="header" onClick={() => getMatchListByChampion(champList.champion)}>{champList.name}</a>
+              <div className="meta">
+                  <span>{champList.title}</span>
               </div>
-              <div className="content">
-                  <a className="header">{this.props.champList.name}</a>
-                  <div className="meta">
-                      <span>{this.props.champList.title}</span>
-                  </div>
-                  <b>{this.props.champList.win} 승 / {this.props.champList.loss} 패 ( {this.props.champList.winPercent} )</b>
-                  <br/>
-                  <b>{this.props.champList.kill} / {this.props.champList.death} / {this.props.champList.assist} ( {this.props.champList.average} )</b>
-              </div>
-            </div>
-        );
-    }
+              <b>{champList.win} 승 / {champList.loss} 패 ( {champList.winPercent} )</b>
+              <br/>
+              <b>{champList.kill} / {champList.death} / {champList.assist} ( {champList.average} )</b>
+          </div>
+        </div>
+    );
 }
+
 
 export default ChampStat;

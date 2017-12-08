@@ -1,16 +1,20 @@
 import React, {Component} from 'react';
-import { Header, SearchWrapper, SearchResult } from '../../components';
+import { Grid, Segment, Dimmer, Loader, Select } from 'semantic-ui-react';
+import axios from 'axios';
+
+import { Header, MatchList, SummonerInfo, RecentSummoner } from '../../components';
 import * as service from '../../services/search';
-import * as etc from '../../services/etc';
+import * as utils from '../../services/utils';
 import * as champ from '../../services/champions';
 
 class SearchContainer extends Component {
     constructor(props) {
         super(props);
 
-        const arr = etc.recnetSummoner('');
+        const arr = utils.getRecentSummoer('');
 
         this.state = {
+            loadingStatus: null,
             summonerName: '',
             summoner: {
                 id: null,
@@ -32,17 +36,19 @@ class SearchContainer extends Component {
             matchList: [],
             myInfo: [],
             champStat: [],
-            totalMatchInfo: {},
-            totalStats: {},
+            totalMatchInfo: {
+                wins: 0,
+                losses: 0,
+                label: null,
+                percent: null,
+                circleSize: 20
+            },
             recentSummoner: arr
         };
-
-        this.getSummonerInfo = this.getSummonerInfo.bind(this);
-        this.searchSummoner = this.searchSummoner.bind(this);
     }
 
     // 소환사 검색
-    async getSummonerInfo(summonerName) {
+    getSummonerInfo = async (summonerName)  => {
         const summoner = await service.getSummoner(summonerName);
         // 소환사 정보
         const { id, accountId, profileIconId, summonerLevel, revisionDate } = summoner.data;
@@ -72,17 +78,11 @@ class SearchContainer extends Component {
 
         // 랭크 티어 이미지
         let tierNum = 1;
-        tierNum = etc.getTierNum(rank);
+        tierNum = utils.getTierNum(rank);
         let tierSrc = `//opgg-static.akamaized.net/images/medals/${tier}_${tierNum}.png`;
         tierSrc = tierSrc.toLowerCase();
 
-        // 최근 20 게임
-        const recentMatches = await service.getRecentMatch(accountId);
-        const matchList = recentMatches.data.matches;
-
-        const totalStats = etc.laneStats(matchList);
-
-        setTimeout(this.getGameInfo(matchList), 5000000);
+        setTimeout(this.getMatchListDetailInfo('recent', accountId), 50000);
 
         // state 설정
         this.setState({
@@ -103,87 +103,89 @@ class SearchContainer extends Component {
                 leaguePoints,
                 wins,
                 losses
-            },
-            totalStats: totalStats
+            }
         });
     }
 
-    // 게임정보
-    getGameInfo(matchList) {
+    // 챔피언 선택시
+    getMatchListDetailInfo = async (championId, accountId) => {
+        const champions = champ.getChampions();
+        let matchList = [];
+
+        if(championId === 'recent') {
+            const recentMatches = await service.getRecentMatch(accountId);
+            matchList = recentMatches.data.matches;
+        } else {
+            // 챔피언에 대한 최근 10경기를 가져온다.
+            matchList = await axios.get(`https://kr.api.riotgames.com/lol/match/v3/matchlists/by-account/4661694?champion=${championId}&endIndex=20&api_key=RGAPI-c860b5ba-07bc-4531-85d1-f7bd349e3636`)
+            .then(function(res){
+                return res.data.matches;
+            });
+        }
+
+        const totalStats = utils.laneStats(matchList);
+        this.setState({
+            totalStats: totalStats
+        });
+
+        // 챔피언에 대한 최근 10경기 상세정보를 가져온다.
+        const matchListInfo = await service.getGameListInfo(matchList);
+
         let myInfos = [];
         let matchLists = [];
-        let matchListLength = matchList.length;
+        let myInfoList = {};
+        let wins = 0;
 
-        // this 사용가능 변수
-        const self = this;
-
-        matchList.map(async (match, i) => {
-          const champions = champ.getChampions();
-          const champion = match.champion;
-
-          let championData = champions.filter(function(item){
-              return item.id === champion;
-          });
-
-          const championName = championData[0].name;
-          const gameId = match.gameId;
-
-          await service.getGameInfo(gameId)
-          .then(function(res) {
-            const queueId = res.data.queueId;
-            const gameCreation = res.data.gameCreation;
-            const gameDuration = res.data.gameDuration;
-            const participants = res.data.participants;
-            const participantIdentities = res.data.participantIdentities;
-            const myGameInfo = participantIdentities.filter(function(item){
+        matchListInfo.map((match, i) => {
+            const { queueId, gameCreation, gameDuration, participants, participantIdentities } = match;
+            // 게임타입
+            const gameType = utils.getGameType(queueId);
+            // 검색한 소환사 게임정보
+            const myGameInfo = participantIdentities
+            .filter(function(item) {
                 return item.player.summonerName.toLowerCase() === document.getElementById('summonerName').value.toLowerCase();
             });
+            // 게임 내 유저번호
             const playerId = myGameInfo[0].participantId;
 
+            // 날짜계산
             const now = new Date().getTime();
             const realGameCreation = now - gameCreation;
 
-            const myInfo = participants.filter(function(item){
+            // 승/패 계산, 챔피언 정보 저장
+            const myInfo = participants.filter(function(item) {
                 return item.participantId === playerId;
             });
-
             if(myInfo[0].stats.win === true) {
-                self.setState({
-                  totalMatchInfo: {
-                    wins: self.state.totalMatchInfo.wins + 1,
-                    losses: 19 - self.state.totalMatchInfo.wins,
-                    label: (self.state.totalMatchInfo.wins + 1) +'승 / ' + (19 - self.state.totalMatchInfo.wins) + '패',
-                    percent: 100 * (self.state.totalMatchInfo.wins + 1) / 20 + " %"
-                  }
-                });
+                wins = wins + 1;
             }
+            // 챔피언 정보
+            const championData = champions.filter(function(item){
+                return item.title === myInfo[0].championId;
+            });
 
-            let gameType = "";
-            gameType = etc.getGameType(queueId);
-
+            // 팀 정보
             const team1 = participants.filter(function(item){
                 return item.teamId === 100;
             });
-
             const team2 = participants.filter(function(item){
                   return item.teamId === 200;
             });
-
             const teamInfo1 = team1.map((obj) => {
                 return (
                       obj.championId
                 );
             });
-
             const teamInfo2 = team2.map((obj) => {
                 return (
                       obj.championId
                 );
             });
 
+            // 결과를 출력할 게임정보 저장 객체
             const matchList =  {
-                  champion: champion,
-                  championName: championName,
+                  champion: myInfo[0].championId,
+                  championName: championData[0].text,
                   spell1: myInfo[0].spell1Id,
                   spell2: myInfo[0].spell2Id,
                   stats: myInfo[0].stats,
@@ -196,45 +198,45 @@ class SearchContainer extends Component {
 
             myInfos = myInfos.concat(myInfo[0]);
             matchLists = matchLists.concat(matchList);
+        });
 
-            if(i === matchListLength - 1) {
-              let champArr = myInfos.map((obj, i) => {
-                  return obj.championId;
-              });
+        let champArr = myInfos.map((obj, i) => {
+            return obj.championId;
+        });
 
-              champArr = etc.uniqueArr(champArr);
+        champArr = utils.uniqueArr(champArr);
+        // 나의 게임정보 상위 4개의 챔피언을 저장
+        myInfoList = utils.setmyInfoList(myInfos, champArr);
+        myInfoList = utils.sortInfoList(myInfoList);
+        myInfoList = myInfoList.slice(0, 4);
 
-              let myInfoList = etc.setmyInfoList(myInfos, champArr);
-              myInfoList = etc.sortInfoList(myInfoList);
-              myInfoList = myInfoList.slice(0,3);
-
-              matchLists = etc.sortMatchList(matchLists);
-
-              self.setState({
-                  matchList: matchLists,
-                  myInfo: myInfoList
-              });
-            }
-          })
-          .catch(function(error) {
-              console.log(error);
-              return;
-          });
-      });
+        const totalMatchInfo = {
+            wins: wins,
+            losses: matchList.length - wins,
+            label: (wins) +'승 / ' + (matchList.length - wins) + '패',
+            percent: 100 * (wins) / matchList.length + " %",
+            circleSize: matchList.length
+        }
+        this.setState({
+            matchList: matchLists,
+            myInfo: myInfoList,
+            totalMatchInfo: totalMatchInfo,
+            loadingStatus: false
+        });
     }
 
     // 검색버튼 클릭 시
-    searchSummoner() {
-        // 소환사 명
+    searchSummoner = () => {
         let summonerName = document.getElementById('summonerName').value;
 
-        const recentSummoner = etc.recnetSummoner(summonerName);
+        const recentSummoner = utils.getRecentSummoer(summonerName);
         this.setState({
           recentSummoner: recentSummoner
         });
 
         // state 초기화
         this.setState({
+            loadingStatus: true,
             matchList: [],
             totalMatchInfo: {
                 wins: 0,
@@ -248,25 +250,60 @@ class SearchContainer extends Component {
         this.getSummonerInfo(summonerName);
     }
 
+    onSelect = (e) => {
+        this.getMatchListDetailInfo(e.target.title);
+    }
+
     render() {
+        const champions = champ.getChampions();
+
         return (
-          <div>
-            <SearchWrapper>
-                <Header
-                    searchSummoner={this.searchSummoner}
-                />
-                <SearchResult
-                    name={this.state.summonerName}
-                    summoner={this.state.summoner}
-                    rating={this.state.rating}
-                    matchList={this.state.matchList}
-                    totalMatchInfo={this.state.totalMatchInfo}
-                    totalStats={this.state.totalStats}
-                    myInfo={this.state.myInfo}
-                    recentSummoner={this.state.recentSummoner}
-                />
-            </SearchWrapper>
-        </div>
+            <div>
+              <Dimmer
+                active={this.state.loadingStatus}
+                content={<Loader indeterminate size="massive">Searching Summoner</Loader>}
+                page
+              />
+              <Header
+                searchSummoner={this.searchSummoner}
+              />
+
+              {this.state.loadingStatus === false &&
+              <Grid centered columns='equal'>
+                <Grid.Row>
+                  <Segment>
+                    <Grid.Column width={13}>
+                      <SummonerInfo
+                          summoner={this.state.summoner}
+                          rating={this.state.rating}
+                          name={this.state.summonerName}
+                          totalMatchInfo={this.state.totalMatchInfo}
+                          myInfo={this.state.myInfo}
+                          totalStats={this.state.totalStats}
+                          getMatchListByChampion={this.getMatchListDetailInfo}
+                      />
+                    </Grid.Column>
+                  </Segment>
+                </Grid.Row>
+
+                <Grid.Row>
+                  <Segment>
+                    <Grid.Column width={14}>
+                      <MatchList
+                        matchList={this.state.matchList}
+                      />
+                    </Grid.Column>
+                  </Segment>
+
+                  <Grid.Column width={4}>
+                    <Segment compact className='champ-select'>
+                      <Select placeholder='Select Champions' options={champions} onChange={this.onSelect}/>
+                    </Segment>
+                  </Grid.Column>
+                </Grid.Row>
+              </Grid>
+              }
+            </div>
         );
     }
 }
