@@ -6,6 +6,7 @@ import LaneStats from './LaneStats/LaneStats';
 import ChampStats from './ChampStats/ChampStats';
 import RecentSummoner from './RecentSummoner/RecentSummoner';
 import SummonerInfo from './SummonerInfo/SummonerInfo';
+import RankInfo from './RankInfo/RankInfo';
 
 export {
     Header,
@@ -15,5 +16,6 @@ export {
     LaneStats,
     ChampStats,
     RecentSummoner,
-    SummonerInfo
+    SummonerInfo,
+    RankInfo
 };

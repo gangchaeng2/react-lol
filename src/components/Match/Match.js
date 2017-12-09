@@ -8,16 +8,19 @@ import './Match.css';
 const Match = ({ match }) => {
     const lastDate = new Date(match.gameCreation);
 
-    let strDate = (lastDate.getUTCMonth()) + ' 달 전';
-    if(strDate === '0 달 전') {
-        strDate = (lastDate.getUTCDate() - 1) + ' 일 전';
+    let strDate = (lastDate.getUTCMonth()) + '달 전';
+    if(strDate === '0달 전') {
+        strDate = (lastDate.getUTCDate() - 1) + '일 전';
     }
-    if(strDate === '0 일 전') {
-        strDate = (lastDate.getUTCHours()) + ' 시간 전';
+    if(strDate === '0일 전') {
+        strDate = (lastDate.getUTCHours()) + '시간 전';
+    }
+    if(strDate === '0시간 전') {
+        strDate = (lastDate.getUTCMinutes()) + '분 전';
     }
 
     return (
-        <tbody>
+      <tbody>
           <tr className={match.stats.win ? "" : "negative"}>
             <td className="center aligned">
                 {match.stats.win ? "Win" : "Loss"}

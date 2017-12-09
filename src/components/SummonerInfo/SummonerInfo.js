@@ -1,22 +1,24 @@
 import React from 'react';
-import { DonutChart, LaneStats, ChampStats } from '../';
+import { DonutChart, LaneStats, ChampStats, RankInfo } from '../';
 import './SummonerInfo.css';
 
 const champStats = (data, getMatchListByChampion) => {
   return data.map((champList, i) => {
-      return (
-          <ChampStats
-            champList={champList}
-            getMatchListByChampion={getMatchListByChampion}
-            key={i}
-          />
-      );
+      if(i < 4){
+        return (
+            <ChampStats
+              champList={champList}
+              getMatchListByChampion={getMatchListByChampion}
+              key={i}
+            />
+        );
+      }
   });
 };
 
-const SummonerInfo = ({ summoner, rating, name, totalMatchInfo, myInfo, totalStats, getMatchListByChampion }) => {
+const SummonerInfo = ({ summoner, rating, summonerName, totalMatchInfo, myInfo, totalStats, getMatchListByChampion, soloRating, freeRating }) => {
     return (
-      <table className="ui celled collapsing table">
+      <table className="ui celled table">
         <thead>
           <tr>
             <th className="center aligned">소환사 정보</th>
@@ -29,40 +31,12 @@ const SummonerInfo = ({ summoner, rating, name, totalMatchInfo, myInfo, totalSta
         <tbody>
           <tr>
             <td>
-              <div className="ui centered cards">
-                <div className="card">
-                  <div className="ui fluid image">
-                    <div className="ui large black ribbon label">
-                        Level : {summoner.summonerLevel}
-                    </div>
-                    <img src={`//opgg-static.akamaized.net/images/profile_icons/profileIcon${summoner.profileIconId}.jpg`} alt=""/>
-                  </div>
-                  <div className="content summoner-info">
-                    <div className="header">{name}</div>
-                    <div className="meta">
-                        {summoner.revisionDate}
-                    </div>
-                    <div className="description">
-                      {summoner.status ? "현재 게임중 입니다." : "현재 게임중이 아닙니다."}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="image">
-                    <img src={rating.tierSrc} alt=""/>
-                  </div>
-                  <div className="content summoner-info">
-                    <div className="header">{rating.tier} {rating.rank}</div>
-                    <div className="meta">
-                      <span className="date">{rating.leagueName}</span>
-                    </div>
-                    <div className="description">
-                      {rating.leaguePoints}LP / {rating.wins}승 {rating.losses}패
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <RankInfo
+                  summoner={summoner}
+                  summonerName={summonerName}
+                  soloRating={soloRating}
+                  freeRating={freeRating}
+              />
             </td>
 
             <td className="center aligned">

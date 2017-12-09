@@ -131,57 +131,69 @@ export function laneStats(matchList) {
 
 // 게임정보 저장
 export function setmyInfoList(myInfo, champArr) {
-    let championStats = [];
+    let championStats = {
+        championStat:[],
+        totalKill: 0,
+        totalDeath: 0,
+        totalAssist: 0,
+        totalAverage: 0
+    };
 
     champArr.map((obj, i) => {
-      let info = null;
+        let info = null;
 
-      info = myInfo.filter(function(item){
-          return item.championId === champArr[i];
-      });
-
-      let championStat = {};
-
-      let totalGame = info.length;
-      let champion = info[0].championId;
-      let name = '';
-      let title = '';
-      let win = 0;
-      let loss = 0;
-      let kill = 0;
-      let assist = 0;
-      let death = 0;
-
-      const champions = champ.getChampions();
-
-      let championData = champions.filter(function(item){
-          return item.title === champion;
-      });
-
-      name = championData[0].text;
-      title = championData[0].key;
-
-      if(info.length > 1) {
-        info.map((obj2, j) => {
-          if(obj2.stats.win) {
-            win += 1;
-          } else {
-            loss += 1;
-          }
-          kill += obj2.stats.kills;
-          assist += obj2.stats.assists;
-          death += obj2.stats.deaths;
+        info = myInfo.filter(function(item){
+            return item.championId === champArr[i];
         });
-      } else {
-        if(info[0].stats.win) {
-          win += 1;
+
+        let championStat = {};
+
+        let totalGame = info.length;
+        let champion = info[0].championId;
+        let name = '';
+        let title = '';
+        let win = 0;
+        let loss = 0;
+        let kill = 0;
+        let assist = 0;
+        let death = 0;
+
+        const champions = champ.getChampions();
+
+        let championData = champions.filter(function(item){
+            return item.title === champion;
+        });
+
+        name = championData[0].text;
+        title = championData[0].key;
+
+        if(info.length > 1) {
+            info.map((obj2, j) => {
+                if(obj2.stats.win) {
+                  win += 1;
+                } else {
+                  loss += 1;
+                }
+                kill += obj2.stats.kills;
+                assist += obj2.stats.assists;
+                death += obj2.stats.deaths;
+            });
         } else {
-          loss += 1;
-        }
-        kill = info[0].stats.kills;
-        assist = info[0].stats.assists;
-        death = info[0].stats.deaths;
+            if(info[0].stats.win) {
+                win += 1;
+            } else {
+                loss += 1;
+            }
+
+            kill = info[0].stats.kills;
+            assist = info[0].stats.assists;
+            death = info[0].stats.deaths;
       }
+
+      championStats.totalKill = kill + championStats.totalKill;
+      championStats.totalDeath = death + championStats.totalDeath;
+      championStats.totalAssist = assist + championStats.totalAssist;
+      championStats.totalAverage = ((championStats.totalKill + championStats.totalAssist) / championStats.totalDeath).toFixed(2);
 
       championStat = {
           totalGame: totalGame,
@@ -197,7 +209,7 @@ export function setmyInfoList(myInfo, champArr) {
           winPercent: (100 * win / totalGame).toFixed(2) + "%"
       }
 
-      championStats = championStats.concat(championStat);
+      championStats.championStat = championStats.championStat.concat(championStat);
     });
 
     return championStats;
@@ -205,7 +217,7 @@ export function setmyInfoList(myInfo, champArr) {
 
 // 게임수로 정렬
 export function sortInfoList(infoList) {
-  infoList.sort(function(obj1, obj2) {
+  infoList.championStat.sort(function(obj1, obj2) {
     return obj1.totalGame > obj2.totalGame ? -1 : obj1.totalGame < obj2.totalGame ? 1 : 0;
   });
 

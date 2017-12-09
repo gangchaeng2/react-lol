@@ -1,5 +1,4 @@
 import React from 'react';
-import { Segment } from 'semantic-ui-react';
 
 const recentSummoners = (data) => {
   return data.recentSummoner.map((summoner, i) => {

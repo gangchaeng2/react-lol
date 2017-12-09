@@ -1,5 +1,5 @@
 .match-list {
-    margin-top: 1%;
+    margin: auto;
 }
 .match-list h1 {
     font-size: 3rem;
@@ -14,6 +14,6 @@
     height: 50px;
 }
 
-.match-list.special.cards .image{
-  on: 'hover'
+table.ui.celled.table {
+    border: none;
 }

@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
-import { Grid, Segment, Dimmer, Loader, Select } from 'semantic-ui-react';
-import axios from 'axios';
+import { Grid, Segment, Dimmer, Loader, Select, Tab } from 'semantic-ui-react';
 
 import { Header, MatchList, SummonerInfo, RecentSummoner } from '../../components';
 import * as service from '../../services/search';
@@ -14,6 +13,7 @@ class SearchContainer extends Component {
         const arr = utils.getRecentSummoer('');
 
         this.state = {
+            setQueueType: 0,
             loadingStatus: null,
             summonerName: '',
             summoner: {
@@ -24,9 +24,18 @@ class SearchContainer extends Component {
                 revisionDate: null,
                 status: null
             },
-            rating: {
+            soloRating: {
                 tier: null,
-                tierSrc: null,
+                soloTierSrc: null,
+                rank: null,
+                leagueName: null,
+                leaguePoints: null,
+                wins: null,
+                losses: null
+            },
+            freeRating: {
+                tier: null,
+                freeTierSrc: null,
                 rank: null,
                 leagueName: null,
                 leaguePoints: null,
@@ -68,21 +77,26 @@ class SearchContainer extends Component {
         // 티어 승,패 정보
         const summonerRate = await service.getSummoneRating(id);
 
-        // 솔로랭크만 가져오는 필터
+        // 솔로랭크
         const soloRankRate = summonerRate.data.filter(function(item){
             return item.queueType === "RANKED_SOLO_5x5";
         });
 
-        // 랭크 결과값 저장
-        const {tier, rank, leagueName, leaguePoints, wins, losses} = soloRankRate[0];
+        // 자유랭크
+        const freeRankRate = summonerRate.data.filter(function(item){
+            return item.queueType === "RANKED_FLEX_SR";
+        });
 
         // 랭크 티어 이미지
-        let tierNum = 1;
-        tierNum = utils.getTierNum(rank);
-        let tierSrc = `//opgg-static.akamaized.net/images/medals/${tier}_${tierNum}.png`;
-        tierSrc = tierSrc.toLowerCase();
+        let soloTierNum = 1;
+        soloTierNum = utils.getTierNum(soloRankRate[0].rank);
+        let soloTierSrc = `//opgg-static.akamaized.net/images/medals/${soloRankRate[0].tier}_${soloTierNum}.png`;
+        soloTierSrc = soloTierSrc.toLowerCase();
 
-        setTimeout(this.getMatchListDetailInfo('recent', accountId), 50000);
+        let freeTierNum = 1;
+        freeTierNum = utils.getTierNum(freeRankRate[0].rank);
+        let freeTierSrc = `//opgg-static.akamaized.net/images/medals/${freeRankRate[0].tier}_${freeTierNum}.png`;
+        freeTierSrc = freeTierSrc.toLowerCase();
 
         // state 설정
         this.setState({
@@ -95,33 +109,35 @@ class SearchContainer extends Component {
               revisionDate: strDate,
               status: currentStatus
             },
-            rating: {
-                tier,
-                tierSrc,
-                rank,
-                leagueName,
-                leaguePoints,
-                wins,
-                losses
+            soloRating: {
+                tier: soloRankRate[0].tier,
+                soloTierSrc: soloTierSrc,
+                rank: soloRankRate[0].rank,
+                leagueName: soloRankRate[0].leagueName,
+                leaguePoints: soloRankRate[0].leaguePoints,
+                wins: soloRankRate[0].wins,
+                losses: soloRankRate[0].losses
+            },
+            freeRating: {
+              tier: freeRankRate[0].tier,
+              freeTierSrc: freeTierSrc,
+              rank: freeRankRate[0].rank,
+              leagueName: freeRankRate[0].leagueName,
+              leaguePoints: freeRankRate[0].leaguePoints,
+              wins: freeRankRate[0].wins,
+              losses: freeRankRate[0].losses
             }
         });
+
+        setTimeout(this.getMatchListDetailInfo('recent', accountId), 50000);
     }
 
-    // 챔피언 선택시
+    // 매치 리스트
     getMatchListDetailInfo = async (championId, accountId) => {
         const champions = champ.getChampions();
         let matchList = [];
-
-        if(championId === 'recent') {
-            const recentMatches = await service.getRecentMatch(accountId);
-            matchList = recentMatches.data.matches;
-        } else {
-            // 챔피언에 대한 최근 10경기를 가져온다.
-            matchList = await axios.get(`https://kr.api.riotgames.com/lol/match/v3/matchlists/by-account/4661694?champion=${championId}&endIndex=20&api_key=RGAPI-c860b5ba-07bc-4531-85d1-f7bd349e3636`)
-            .then(function(res){
-                return res.data.matches;
-            });
-        }
+        matchList = await service.getMatchList(championId, accountId);
+        matchList = matchList.data.matches;
 
         const totalStats = utils.laneStats(matchList);
         this.setState({
@@ -200,23 +216,29 @@ class SearchContainer extends Component {
             matchLists = matchLists.concat(matchList);
         });
 
+        // 매치 리스트에서 내가 한 챔피언 저장
         let champArr = myInfos.map((obj, i) => {
             return obj.championId;
         });
-
+        // 매치 리스트에서 중복 챔피언 제거
         champArr = utils.uniqueArr(champArr);
-        // 나의 게임정보 상위 4개의 챔피언을 저장
+
+        // 매치 리스트 챔피언 승/패/KDA 저장
         myInfoList = utils.setmyInfoList(myInfos, champArr);
         myInfoList = utils.sortInfoList(myInfoList);
-        myInfoList = myInfoList.slice(0, 4);
 
         const totalMatchInfo = {
+            totalKill: myInfoList.totalKill,
+            totalDeath: myInfoList.totalDeath,
+            totalAssist: myInfoList.totalAssist,
+            totalAverage: myInfoList.totalAverage,
             wins: wins,
-            losses: matchList.length - wins,
-            label: (wins) +'승 / ' + (matchList.length - wins) + '패',
-            percent: 100 * (wins) / matchList.length + " %",
-            circleSize: matchList.length
+            losses: matchListInfo.length - wins,
+            label: (wins) +'승 / ' + (matchListInfo.length - wins) + '패',
+            percent: 100 * (wins) / matchListInfo.length + " %",
+            circleSize: matchListInfo.length
         }
+
         this.setState({
             matchList: matchLists,
             myInfo: myInfoList,
@@ -227,6 +249,7 @@ class SearchContainer extends Component {
 
     // 검색버튼 클릭 시
     searchSummoner = () => {
+        // let summonerName = document.getElementById('summonerName').value;
         let summonerName = document.getElementById('summonerName').value;
 
         const recentSummoner = utils.getRecentSummoer(summonerName);
@@ -254,8 +277,30 @@ class SearchContainer extends Component {
         this.getMatchListDetailInfo(e.target.title);
     }
 
+    onSelectByQueueType = (e) => {
+        let index = 0;
+        if(e.target.text === '전체') {
+            index = 0;
+        } else if(e.target.text === '솔로랭크') {
+            index = 1;
+        } else if(e.target.text === '자유랭크') {
+            index = 2;
+        }
+
+        this.setState({
+            loadingStatus: true,
+            setQueueType: index
+        });
+        this.getMatchListDetailInfo(e.target.text, this.state.summoner.accountId);
+    }
+
     render() {
         const champions = champ.getChampions();
+        const panes = [
+          { id: '0', menuItem: '전체', render: () => <Tab.Pane><MatchList matchList={this.state.matchList}/></Tab.Pane> },
+          { id: '1', menuItem: '솔로랭크', render: () => <Tab.Pane><MatchList matchList={this.state.matchList}/></Tab.Pane> },
+          { id: '2', menuItem: '자유랭크', render: () => <Tab.Pane><MatchList matchList={this.state.matchList}/></Tab.Pane> }
+        ];
 
         return (
             <div>
@@ -269,35 +314,28 @@ class SearchContainer extends Component {
               />
 
               {this.state.loadingStatus === false &&
-              <Grid centered columns='equal'>
-                <Grid.Row>
-                  <Segment>
-                    <Grid.Column width={13}>
+              <Grid>
+                <Grid.Row centered>
+                  <Grid.Column width={10}>
+                    <Segment>
                       <SummonerInfo
                           summoner={this.state.summoner}
-                          rating={this.state.rating}
-                          name={this.state.summonerName}
+                          soloRating={this.state.soloRating}
+                          freeRating={this.state.freeRating}
+                          summonerName={this.state.summonerName}
                           totalMatchInfo={this.state.totalMatchInfo}
-                          myInfo={this.state.myInfo}
+                          myInfo={this.state.myInfo.championStat}
                           totalStats={this.state.totalStats}
                           getMatchListByChampion={this.getMatchListDetailInfo}
                       />
-                    </Grid.Column>
-                  </Segment>
+                    </Segment>
+                  </Grid.Column>
                 </Grid.Row>
 
-                <Grid.Row>
-                  <Segment>
-                    <Grid.Column width={14}>
-                      <MatchList
-                        matchList={this.state.matchList}
-                      />
-                    </Grid.Column>
-                  </Segment>
-
-                  <Grid.Column width={4}>
-                    <Segment compact className='champ-select'>
-                      <Select placeholder='Select Champions' options={champions} onChange={this.onSelect}/>
+                <Grid.Row centered>
+                  <Grid.Column width={12}>
+                    <Segment>
+                      <Tab panes={panes} onTabChange={this.onSelectByQueueType} activeIndex={this.state.setQueueType}/>
                     </Segment>
                   </Grid.Column>
                 </Grid.Row>

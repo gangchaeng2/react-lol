@@ -32,7 +32,12 @@
   font-size:15px;
 }
 
-
+h2.total-stats {
+    text-align: center;
+}
+span.total-death {
+    color: red;
+}
 
 body{
   padding:40px;

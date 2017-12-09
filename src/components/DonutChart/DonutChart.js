@@ -28,15 +28,16 @@ class DonutChart extends Component {
 
       return (
         <div>
-        <svg width={this.props.size} height={this.props.size} className="donutchart">
-          <circle r={radius} cx={halfsize} cy={halfsize} transform={rotateval} style={trackstyle} className="donutchart-track"/>
-          <circle r={radius} cx={halfsize} cy={halfsize} transform={rotateval} style={indicatorstyle} className="donutchart-indicator"/>
-          <text className="donutchart-text" x={halfsize} y={halfsize} style={{textAnchor:'middle'}} >
-            <tspan className="donutchart-text-val"><br/></tspan>
-            <tspan className="donutchart-text-percent">{this.props.totalMatchInfo.percent}</tspan>
-            <tspan className="donutchart-text-label" x={halfsize} y={halfsize+30}>{this.props.totalMatchInfo.label}</tspan>
-          </text>
-        </svg>
+          <svg width={this.props.size} height={this.props.size} className="donutchart">
+            <circle r={radius} cx={halfsize} cy={halfsize} transform={rotateval} style={trackstyle} className="donutchart-track"/>
+            <circle r={radius} cx={halfsize} cy={halfsize} transform={rotateval} style={indicatorstyle} className="donutchart-indicator"/>
+            <text className="donutchart-text" x={halfsize} y={halfsize} style={{textAnchor:'middle'}} >
+              <tspan className="donutchart-text-val"><br/></tspan>
+              <tspan className="donutchart-text-percent">{this.props.totalMatchInfo.percent}</tspan>
+              <tspan className="donutchart-text-label" x={halfsize} y={halfsize+30}>{this.props.totalMatchInfo.label}</tspan>
+            </text>
+          </svg><br/>
+        <h2 className='total-stats'>{this.props.totalMatchInfo.totalKill} / <span className='total-death'>{this.props.totalMatchInfo.totalDeath}</span> / {this.props.totalMatchInfo.totalAssist} ({this.props.totalMatchInfo.totalAverage}:1)</h2>
         </div>
     );
   }
