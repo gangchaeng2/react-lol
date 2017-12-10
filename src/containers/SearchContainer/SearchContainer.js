@@ -25,24 +25,8 @@ class SearchContainer extends Component {
                 revisionDate: null,
                 status: null
             },
-            soloRating: {
-                tier: null,
-                soloTierSrc: null,
-                rank: null,
-                leagueName: null,
-                leaguePoints: null,
-                wins: null,
-                losses: null
-            },
-            freeRating: {
-                tier: null,
-                freeTierSrc: null,
-                rank: null,
-                leagueName: null,
-                leaguePoints: null,
-                wins: null,
-                losses: null
-            },
+            soloRating: {},
+            freeRating: {},
             matchList: [],
             myInfo: [],
             champStat: [],
@@ -76,30 +60,6 @@ class SearchContainer extends Component {
             return false;
         });
 
-        // 티어 승,패 정보
-        const summonerRate = await service.getSummoneRating(id);
-
-        // 솔로랭크
-        const soloRankRate = summonerRate.data.filter(function(item){
-            return item.queueType === "RANKED_SOLO_5x5";
-        });
-
-        // 자유랭크
-        const freeRankRate = summonerRate.data.filter(function(item){
-            return item.queueType === "RANKED_FLEX_SR";
-        });
-
-        // 랭크 티어 이미지
-        let soloTierNum = 1;
-        soloTierNum = utils.getTierNum(soloRankRate[0].rank);
-        let soloTierSrc = `//opgg-static.akamaized.net/images/medals/${soloRankRate[0].tier}_${soloTierNum}.png`;
-        soloTierSrc = soloTierSrc.toLowerCase();
-
-        let freeTierNum = 1;
-        freeTierNum = utils.getTierNum(freeRankRate[0].rank);
-        let freeTierSrc = `//opgg-static.akamaized.net/images/medals/${freeRankRate[0].tier}_${freeTierNum}.png`;
-        freeTierSrc = freeTierSrc.toLowerCase();
-
         // state 설정
         this.setState({
             summonerName,
@@ -110,26 +70,57 @@ class SearchContainer extends Component {
               summonerLevel,
               revisionDate: strDate,
               status: currentStatus
-            },
-            soloRating: {
-                tier: soloRankRate[0].tier,
-                soloTierSrc: soloTierSrc,
-                rank: soloRankRate[0].rank,
-                leagueName: soloRankRate[0].leagueName,
-                leaguePoints: soloRankRate[0].leaguePoints,
-                wins: soloRankRate[0].wins,
-                losses: soloRankRate[0].losses
-            },
-            freeRating: {
-              tier: freeRankRate[0].tier,
-              freeTierSrc: freeTierSrc,
-              rank: freeRankRate[0].rank,
-              leagueName: freeRankRate[0].leagueName,
-              leaguePoints: freeRankRate[0].leaguePoints,
-              wins: freeRankRate[0].wins,
-              losses: freeRankRate[0].losses
             }
         });
+
+        // 티어 승,패 정보
+        const summonerRate = await service.getSummoneRating(id);
+
+        // 솔로랭크
+        const soloRankRate = summonerRate.data.filter(function(item){
+            return item.queueType === "RANKED_SOLO_5x5";
+        });
+        if(soloRankRate[0] !== null && soloRankRate[0] !== undefined) {
+            // 랭크 티어 이미지
+            let soloTierNum = 1;
+            soloTierNum = utils.getTierNum(soloRankRate[0].rank);
+            let soloTierSrc = `//opgg-static.akamaized.net/images/medals/${soloRankRate[0].tier}_${soloTierNum}.png`;
+            soloTierSrc = soloTierSrc.toLowerCase();
+            this.setState({
+              soloRating: {
+                  tier: soloRankRate[0].tier,
+                  soloTierSrc: soloTierSrc,
+                  rank: soloRankRate[0].rank,
+                  leagueName: soloRankRate[0].leagueName,
+                  leaguePoints: soloRankRate[0].leaguePoints,
+                  wins: soloRankRate[0].wins,
+                  losses: soloRankRate[0].losses
+              }
+            });
+        }
+
+        // 자유랭크
+        const freeRankRate = summonerRate.data.filter(function(item){
+            return item.queueType === "RANKED_FLEX_SR";
+        });
+        if(freeRankRate[0] !== null && freeRankRate[0] !== undefined) {
+            let freeTierNum = 1;
+            freeTierNum = utils.getTierNum(freeRankRate[0].rank);
+            let freeTierSrc = `//opgg-static.akamaized.net/images/medals/${freeRankRate[0].tier}_${freeTierNum}.png`;
+            freeTierSrc = freeTierSrc.toLowerCase();
+
+            this.setState({
+              freeRating: {
+                tier: freeRankRate[0].tier,
+                freeTierSrc: freeTierSrc,
+                rank: freeRankRate[0].rank,
+                leagueName: freeRankRate[0].leagueName,
+                leaguePoints: freeRankRate[0].leaguePoints,
+                wins: freeRankRate[0].wins,
+                losses: freeRankRate[0].losses
+              }
+            });
+        }
 
         // 매치 리스트 검색
         setTimeout(this.getMatchListDetailInfo('recent', accountId), 50000);
@@ -265,6 +256,8 @@ class SearchContainer extends Component {
 
         // state 초기화
         this.setState({
+            soloRating: {},
+            freeRating: {},
             loadingSearch: true,
             matchList: [],
             totalMatchInfo: {
@@ -273,6 +266,7 @@ class SearchContainer extends Component {
                 label: null,
                 percent: null
             },
+            setQueueType: 0,
             myInfo: []
         });
 
