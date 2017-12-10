@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { Grid, Segment, Dimmer, Loader, Select, Tab } from 'semantic-ui-react';
 
-import { Header, MatchList, SummonerInfo, RecentSummoner } from '../../components';
+import { Header, MatchList, SearchResult, RecentSummoner } from '../../components';
 import * as service from '../../services/search';
 import * as utils from '../../services/utils';
 import * as champ from '../../services/champions';
@@ -14,7 +14,8 @@ class SearchContainer extends Component {
 
         this.state = {
             setQueueType: 0,
-            loadingStatus: null,
+            loadingTab: null,
+            loadingSearch: null,
             summonerName: '',
             summoner: {
                 id: null,
@@ -65,6 +66,7 @@ class SearchContainer extends Component {
         const lastDate = new Date(revisionDate);
         const strDate = lastDate.toLocaleString();
 
+        // 소환사 현재 게임진행 상태
         const currentStatus = await service.getCurrentStatus(id)
         .then(function(res){
             return true;
@@ -129,21 +131,21 @@ class SearchContainer extends Component {
             }
         });
 
+        // 매치 리스트 검색
         setTimeout(this.getMatchListDetailInfo('recent', accountId), 50000);
     }
 
-    // 매치 리스트
+    // 매치 리스트 검색
     getMatchListDetailInfo = async (championId, accountId) => {
-        const champions = champ.getChampions();
+        // 챔피언, 랭크별 매치 리스트 검색
         let matchList = [];
         matchList = await service.getMatchList(championId, accountId);
         matchList = matchList.data.matches;
-
+        // 라인 정보 저장
         const totalStats = utils.laneStats(matchList);
-        this.setState({
-            totalStats: totalStats
-        });
 
+        // 챔피언 정보 호출
+        const champions = champ.getChampions();
         // 챔피언에 대한 최근 10경기 상세정보를 가져온다.
         const matchListInfo = await service.getGameListInfo(matchList);
 
@@ -164,7 +166,7 @@ class SearchContainer extends Component {
             // 게임 내 유저번호
             const playerId = myGameInfo[0].participantId;
 
-            // 날짜계산
+            // 게임생성 날짜계산
             const now = new Date().getTime();
             const realGameCreation = now - gameCreation;
 
@@ -179,7 +181,6 @@ class SearchContainer extends Component {
             const championData = champions.filter(function(item){
                 return item.title === myInfo[0].championId;
             });
-
             // 팀 정보
             const team1 = participants.filter(function(item){
                 return item.teamId === 100;
@@ -212,6 +213,7 @@ class SearchContainer extends Component {
                   team2: teamInfo2
             };
 
+            // 매치 상세정보 객체를 배열에 저장
             myInfos = myInfos.concat(myInfo[0]);
             matchLists = matchLists.concat(matchList);
         });
@@ -227,6 +229,7 @@ class SearchContainer extends Component {
         myInfoList = utils.setmyInfoList(myInfos, champArr);
         myInfoList = utils.sortInfoList(myInfoList);
 
+        // 도넛 차트 출력을 위한 객체
         const totalMatchInfo = {
             totalKill: myInfoList.totalKill,
             totalDeath: myInfoList.totalDeath,
@@ -239,11 +242,14 @@ class SearchContainer extends Component {
             circleSize: matchListInfo.length
         }
 
+        // state 설정
         this.setState({
             matchList: matchLists,
             myInfo: myInfoList,
             totalMatchInfo: totalMatchInfo,
-            loadingStatus: false
+            totalStats: totalStats,
+            loadingSearch: false,
+            loadingTab: false
         });
     }
 
@@ -259,7 +265,7 @@ class SearchContainer extends Component {
 
         // state 초기화
         this.setState({
-            loadingStatus: true,
+            loadingSearch: true,
             matchList: [],
             totalMatchInfo: {
                 wins: 0,
@@ -273,10 +279,12 @@ class SearchContainer extends Component {
         this.getSummonerInfo(summonerName);
     }
 
-    onSelect = (e) => {
+    // 챔피언 selectBox 선택
+    onSelectByChampion = (e) => {
         this.getMatchListDetailInfo(e.target.title);
     }
 
+    // 매치 정보 tab 인덱스 클릭
     onSelectByQueueType = (e) => {
         let index = 0;
         if(e.target.text === '전체') {
@@ -288,14 +296,14 @@ class SearchContainer extends Component {
         }
 
         this.setState({
-            loadingStatus: true,
+            loadingTab: true,
             setQueueType: index
         });
         this.getMatchListDetailInfo(e.target.text, this.state.summoner.accountId);
     }
 
     render() {
-        const champions = champ.getChampions();
+        // const champions = champ.getChampions();
         const panes = [
           { id: '0', menuItem: '전체', render: () => <Tab.Pane><MatchList matchList={this.state.matchList}/></Tab.Pane> },
           { id: '1', menuItem: '솔로랭크', render: () => <Tab.Pane><MatchList matchList={this.state.matchList}/></Tab.Pane> },
@@ -305,7 +313,7 @@ class SearchContainer extends Component {
         return (
             <div>
               <Dimmer
-                active={this.state.loadingStatus}
+                active={this.state.loadingSearch}
                 content={<Loader indeterminate size="massive">Searching Summoner</Loader>}
                 page
               />
@@ -313,12 +321,12 @@ class SearchContainer extends Component {
                 searchSummoner={this.searchSummoner}
               />
 
-              {this.state.loadingStatus === false &&
+              {this.state.loadingSearch === false &&
               <Grid>
                 <Grid.Row centered>
                   <Grid.Column width={10}>
                     <Segment>
-                      <SummonerInfo
+                      <SearchResult
                           summoner={this.state.summoner}
                           soloRating={this.state.soloRating}
                           freeRating={this.state.freeRating}
@@ -335,6 +343,12 @@ class SearchContainer extends Component {
                 <Grid.Row centered>
                   <Grid.Column width={12}>
                     <Segment>
+                      {this.state.loadingTab ?
+                      (
+                        <Dimmer active inverted><Loader inverted content='Loading' /></Dimmer>
+                      ) : (
+                        <Dimmer><Loader inverted content='Loading' /></Dimmer>)
+                      }
                       <Tab panes={panes} onTabChange={this.onSelectByQueueType} activeIndex={this.state.setQueueType}/>
                     </Segment>
                   </Grid.Column>
