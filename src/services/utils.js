@@ -101,7 +101,7 @@ export function laneStats(matchList) {
     let ad = 0;
     let sp = 0;
 
-    matchList.map((match, i) => {
+    matchList.forEach((match, i) => {
       //if(match.queue === 420) {
         total += 1;
         if(match.lane === 'TOP') {
@@ -139,7 +139,7 @@ export function setmyInfoList(myInfo, champArr) {
         totalAverage: 0
     };
 
-    champArr.map((obj, i) => {
+    champArr.forEach((obj, i) => {
         let info = null;
 
         info = myInfo.filter(function(item){
@@ -168,7 +168,7 @@ export function setmyInfoList(myInfo, champArr) {
         title = championData[0].key;
 
         if(info.length > 1) {
-            info.map((obj2, j) => {
+            info.forEach((obj2, j) => {
                 if(obj2.stats.win) {
                   win += 1;
                 } else {
