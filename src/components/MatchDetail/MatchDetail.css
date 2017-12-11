@@ -1,0 +1,20 @@
+img.ui.mini.rounded.image.detail-image {
+    max-width: 2rem;
+    display: initial;
+}
+
+tr.blue-team {
+    background: #ddddff;
+}
+tr.blue-team:hover {
+    cursor: pointer;
+    background: #bdbdbd;
+}
+
+tr.red-team {
+    background: #ffddff;
+}
+tr.red-team:hover {
+    cursor: pointer;
+    background: #bdbdbd;
+}
