@@ -11,7 +11,7 @@ const teamStats = (team, teamGameInfo) => {
     const teamWin = teamGameInfo.win === 'Win' ? true : false;
     const {firstBlood, firstRiftHerald, towerKills, baronKills, dragonKills, teamId} = teamGameInfo;
 
-    team.map((summoner, i) => {
+    team.forEach((summoner, i) => {
         totalKill = totalKill + summoner.stats.kills;
         totalDeath = totalDeath + summoner.stats.deaths;
         totalAssist = totalAssist + summoner.stats.assists;
