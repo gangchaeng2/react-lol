@@ -22,9 +22,9 @@ const SearchResult = ({ summoner, rating, summonerName, totalMatchInfo, myInfo, 
         <thead>
           <tr>
             <th className="center aligned">소환사 정보</th>
-            <th className="center aligned">최근 챔피언 통계</th>
-            <th className="center aligned">최근 라인 통계</th>
-            <th className="center aligned">최근 승/패 통계</th>
+            <th className="center aligned">챔피언 통계</th>
+            <th className="center aligned">라인 통계</th>
+            <th className="center aligned">승/패 통계</th>
           </tr>
         </thead>
 
