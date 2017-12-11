@@ -5,7 +5,7 @@ import * as utils from '../../services/utils';
 
 import './Match.css';
 
-const Match = ({ match }) => {
+const Match = ({ match, matchDetailInfo, index }) => {
     const lastDate = new Date(match.gameCreation);
 
     let strDate = (lastDate.getUTCMonth()) + '달 전';
@@ -21,7 +21,7 @@ const Match = ({ match }) => {
 
     return (
       <tbody>
-          <tr className={match.stats.win ? "" : "negative"}>
+          <tr className={match.stats.win ? "win-match" : "loss-match"} onClick={() => matchDetailInfo(index)}>
             <td className="center aligned">
                 {match.stats.win ? "Win" : "Loss"}
             </td>
@@ -31,7 +31,8 @@ const Match = ({ match }) => {
             </td>
 
             <td className="center aligned">
-                {match.stats.kills} / {match.stats.deaths} / {match.stats.assists}
+                <b>{match.stats.kills} / {match.stats.deaths} / {match.stats.assists}<br/>
+                {((match.stats.kills + match.stats.assists) / match.stats.deaths).toFixed(2)}:1 평점</b>
             </td>
 
             <td className="center aligned">
