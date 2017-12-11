@@ -27,7 +27,7 @@ const SummonerInfo = ({summoner, soloRating, freeRating, summonerName}) => {
                 <span className='cinema'>{soloRating.leagueName}</span>
               </Item.Meta>
               <Item.Description>{soloRating.leaguePoints}LP / {soloRating.wins}승 {soloRating.losses}패</Item.Description>
-              <Item.Description>승률 : {(soloRating.wins/(soloRating.wins+soloRating.losses)*100).toFixed(2)}%</Item.Description>
+              <Item.Description><b>승률 : {(soloRating.wins/(soloRating.wins+soloRating.losses)*100).toFixed(2)}%</b></Item.Description>
             </Item.Content>
           </Item>
         }
@@ -43,7 +43,7 @@ const SummonerInfo = ({summoner, soloRating, freeRating, summonerName}) => {
                 <span className='cinema'>{freeRating.leagueName}</span>
               </Item.Meta>
               <Item.Description>{freeRating.leaguePoints}LP / {freeRating.wins}승 {freeRating.losses}패</Item.Description>
-              <Item.Description>승률 : {(freeRating.wins/(freeRating.wins+freeRating.losses)*100).toFixed(2)}%</Item.Description>
+              <Item.Description><b>승률 : {(freeRating.wins/(freeRating.wins+freeRating.losses)*100).toFixed(2)}%</b></Item.Description>
             </Item.Content>
           </Item>
         }
