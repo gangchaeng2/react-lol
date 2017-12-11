@@ -3,23 +3,25 @@ import { Match } from '../';
 
 import './MatchList.css';
 
-const MatchList = ({ matchList }) => {
-    const printMatch = (data) => {
+const MatchList = ({ matchList, matchDetailInfo }) => {
+    const printMatch = (data, matchDetailInfo) => {
       return data.map((match, i) => {
           return (
             <Match
               match={match}
+              matchDetailInfo={matchDetailInfo}
               key={i}
+              index={i}
             />
           );
       });
     };
 
     return (
-      <div className="match-list">
+      <div>
         {matchList.length > 0 ?
           (
-            <table className="ui celled table">
+            <table className="ui celled table match-list" id='match_table'>
               <thead>
                 <tr>
                   <th className="center aligned">win/loss</th>
@@ -33,7 +35,7 @@ const MatchList = ({ matchList }) => {
                   <th className="center aligned">playTime</th>
                 </tr>
               </thead>
-              {printMatch(matchList)}
+              {printMatch(matchList, matchDetailInfo)}
             </table>
           ) : (<div>기록된 전적이 없습니다.</div>)
         }
