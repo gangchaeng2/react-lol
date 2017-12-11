@@ -16,7 +16,7 @@ const champStats = (data, getMatchListByChampion) => {
   });
 };
 
-const SearchResult = ({ summoner, rating, summonerName, totalMatchInfo, myInfo, totalStats, getMatchListByChampion, soloRating, freeRating }) => {
+const SearchResult = ({ summoner, totalMatchInfo, myInfo, totalStats, getMatchListByChampion, soloRating, freeRating }) => {
     return (
       <table className="ui celled table">
         <thead>
@@ -33,7 +33,6 @@ const SearchResult = ({ summoner, rating, summonerName, totalMatchInfo, myInfo, 
             <td>
               <SummonerInfo
                   summoner={summoner}
-                  summonerName={summonerName}
                   soloRating={soloRating}
                   freeRating={freeRating}
               />
