@@ -8,7 +8,7 @@ const SummonerInfo = ({summoner, soloRating, freeRating, summonerName}) => {
           <Item.Image size='small' src={`//opgg-static.akamaized.net/images/profile_icons/profileIcon${summoner.profileIconId}.jpg`} />
 
           <Item.Content verticalAlign='middle'>
-            <Item.Header>{summonerName}</Item.Header>
+            <Item.Header>{summoner.name}</Item.Header>
             <Item.Meta>
               <span className='cinema'>{summoner.revisionDate}</span>
             </Item.Meta>
