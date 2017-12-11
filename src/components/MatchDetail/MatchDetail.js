@@ -90,12 +90,13 @@ const MatchDetail = ({ detailMatchListInfo, open, onHide, searchSummoner }) => {
 
     return (
       <Modal dimmer={true} open={open}>
-        <Modal.Header>경기상세정보
+        <Modal.Header>
+          경기상세정보
           <Button color='black' onClick={onHide} floated='right' icon>
             <Icon name='close'/>
           </Button>
         </Modal.Header>
-        <Modal.Content scrolling>
+        <Modal.Content scrolling className='detail-game-content'>
           <Table className='detail-table'>
             <Table.Header>
               <Table.Row textAlign='center'>
