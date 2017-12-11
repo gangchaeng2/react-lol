@@ -10,3 +10,24 @@
 table.detail-table {
     margin: auto;
 }
+
+table.match-list>.tbody.tr:hover {
+    background: red;
+    cursor: pointer;
+}
+
+tr.win-match {
+    background: #d4e4fe;
+}
+tr.win-match:hover {
+    cursor: pointer;
+    background: #bdbdbd;
+}
+
+tr.loss-match {
+    background: #ffeeee;
+}
+tr.loss-match:hover {
+    cursor: pointer;
+    background: #bdbdbd;
+}
