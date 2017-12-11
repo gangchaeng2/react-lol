@@ -7,6 +7,7 @@ import ChampStats from './ChampStats/ChampStats';
 import RecentSummoner from './RecentSummoner/RecentSummoner';
 import SearchResult from './SearchResult/SearchResult';
 import SummonerInfo from './SummonerInfo/SummonerInfo';
+import MatchDetail from './MatchDetail/MatchDetail';
 
 export {
     Header,
@@ -17,5 +18,6 @@ export {
     ChampStats,
     RecentSummoner,
     SearchResult,
-    SummonerInfo
+    SummonerInfo,
+    MatchDetail
 };
