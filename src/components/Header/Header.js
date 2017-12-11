@@ -17,7 +17,7 @@ const Header = ({ searchSummoner, handleChange, summonerName }) => {
     return (
       <div className="Header">
           <div className="ui action input">
-              <input type="text" id="summonerName" name="summonerName" placeholder="소환사명" onKeyPress={pressSearch} onChange={handleChange} autoComplete='off' value={summonerName}/>
+              <input type="text" id="summonerName" name="summonerName" placeholder="소환사명" onKeyPress={pressSearch} onChange={handleChange} autoComplete='off' value={summonerName} />
               <button className="ui button" onClick={search}>검색</button>
           </div>
       </div>
