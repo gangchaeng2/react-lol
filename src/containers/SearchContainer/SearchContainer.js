@@ -172,7 +172,7 @@ class SearchContainer extends Component {
             // 검색한 소환사 게임정보
             const myGameInfo = participantIdentities
             .filter(function(item) {
-                return item.player.summonerName.toLowerCase() === self.state.summoner.name.toLowerCase();
+                return item.player.accountId === self.state.summoner.accountId;
             });
             // 게임 내 유저번호
             const playerId = myGameInfo[0].participantId;
@@ -336,7 +336,6 @@ class SearchContainer extends Component {
     }
 
     handleChange = (e) => {
-        console.log(e.target.name);
         this.setState({
             [e.target.name]: e.target.value
         })
