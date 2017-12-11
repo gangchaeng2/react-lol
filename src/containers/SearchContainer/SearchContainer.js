@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { Grid, Segment, Dimmer, Loader, Select, Tab } from 'semantic-ui-react';
 
-import { Header, MatchList, SearchResult, RecentSummoner } from '../../components';
+import { Header, MatchList, SearchResult, RecentSummoner, MatchDetail } from '../../components';
 import * as service from '../../services/search';
 import * as utils from '../../services/utils';
 import * as champ from '../../services/champions';
@@ -13,6 +13,7 @@ class SearchContainer extends Component {
         const arr = utils.getRecentSummoer('');
 
         this.state = {
+            detailOpen: false,
             setQueueType: 0,
             loadingTab: null,
             loadingSearch: null,
@@ -37,6 +38,7 @@ class SearchContainer extends Component {
                 percent: null,
                 circleSize: 20
             },
+            detailMatchListInfo: {},
             recentSummoner: arr
         };
     }
@@ -128,6 +130,7 @@ class SearchContainer extends Component {
 
     // 매치 리스트 검색
     getMatchListDetailInfo = async (championId, accountId) => {
+        const self = this;
         // 챔피언, 랭크별 매치 리스트 검색
         let matchList = [];
         matchList = await service.getMatchList(championId, accountId);
@@ -146,21 +149,19 @@ class SearchContainer extends Component {
         let wins = 0;
 
         matchListInfo.map((match, i) => {
-            const { queueId, gameCreation, gameDuration, participants, participantIdentities } = match;
+            const { queueId, gameCreation, gameDuration, participants, participantIdentities, teams } = match;
             // 게임타입
             const gameType = utils.getGameType(queueId);
+            // 게임생성 날짜
+            const now = new Date().getTime();
+            const realGameCreation = now - gameCreation;
             // 검색한 소환사 게임정보
             const myGameInfo = participantIdentities
             .filter(function(item) {
-                return item.player.summonerName.toLowerCase() === document.getElementById('summonerName').value.toLowerCase();
+                return item.player.summonerName.toLowerCase() === self.state.summonerName.toLowerCase();
             });
             // 게임 내 유저번호
             const playerId = myGameInfo[0].participantId;
-
-            // 게임생성 날짜계산
-            const now = new Date().getTime();
-            const realGameCreation = now - gameCreation;
-
             // 승/패 계산, 챔피언 정보 저장
             const myInfo = participants.filter(function(item) {
                 return item.participantId === playerId;
@@ -168,10 +169,10 @@ class SearchContainer extends Component {
             if(myInfo[0].stats.win === true) {
                 wins = wins + 1;
             }
-            // 챔피언 정보
             const championData = champions.filter(function(item){
                 return item.title === myInfo[0].championId;
             });
+
             // 팀 정보
             const team1 = participants.filter(function(item){
                 return item.teamId === 100;
@@ -179,16 +180,9 @@ class SearchContainer extends Component {
             const team2 = participants.filter(function(item){
                   return item.teamId === 200;
             });
-            const teamInfo1 = team1.map((obj) => {
-                return (
-                      obj.championId
-                );
-            });
-            const teamInfo2 = team2.map((obj) => {
-                return (
-                      obj.championId
-                );
-            });
+
+            // 매치 내 최다 대미지
+            const maxDamage = this.getMaxDamage(participants);
 
             // 결과를 출력할 게임정보 저장 객체
             const matchList =  {
@@ -200,8 +194,13 @@ class SearchContainer extends Component {
                   gameType: gameType,
                   gameCreation: realGameCreation,
                   gameDuration: (gameDuration / 60).toFixed(0),
-                  team1: teamInfo1,
-                  team2: teamInfo2
+                  team1: team1,
+                  team2: team2,
+                  team1Identy: participantIdentities.slice(0, 5),
+                  team2Identy: participantIdentities.slice(5, 10),
+                  team1GameInfo: teams[0],
+                  team2GameInfo: teams[1],
+                  maxDamage: maxDamage
             };
 
             // 매치 상세정보 객체를 배열에 저장
@@ -245,14 +244,10 @@ class SearchContainer extends Component {
     }
 
     // 검색버튼 클릭 시
-    searchSummoner = () => {
-        // let summonerName = document.getElementById('summonerName').value;
-        let summonerName = document.getElementById('summonerName').value;
-
-        const recentSummoner = utils.getRecentSummoer(summonerName);
-        this.setState({
-          recentSummoner: recentSummoner
-        });
+    searchSummoner = (summonerName) => {
+        // this.setState({
+        //   recentSummoner: recentSummoner
+        // });
 
         // state 초기화
         this.setState({
@@ -267,10 +262,23 @@ class SearchContainer extends Component {
                 percent: null
             },
             setQueueType: 0,
-            myInfo: []
+            myInfo: [],
+            detailOpen: false
         });
 
         this.getSummonerInfo(summonerName);
+    }
+
+    // 게임 내 최대 대미지 계산
+    getMaxDamage = (participants) => {
+        let damageArr = [];
+        participants.map((summoner, i) => {
+            damageArr = damageArr.concat(summoner.stats.totalDamageDealtToChampions);
+        });
+
+        const maxDamage = Math.max.apply(null, damageArr);
+
+        return maxDamage;
     }
 
     // 챔피언 selectBox 선택
@@ -281,12 +289,15 @@ class SearchContainer extends Component {
     // 매치 정보 tab 인덱스 클릭
     onSelectByQueueType = (e) => {
         let index = 0;
+
         if(e.target.text === '전체') {
             index = 0;
-        } else if(e.target.text === '솔로랭크') {
+        } else if(e.target.text === '일반게임') {
             index = 1;
-        } else if(e.target.text === '자유랭크') {
+        } else if(e.target.text === '솔로랭크') {
             index = 2;
+        } else if(e.target.text === '자유랭크') {
+            index = 3;
         }
 
         this.setState({
@@ -296,12 +307,35 @@ class SearchContainer extends Component {
         this.getMatchListDetailInfo(e.target.text, this.state.summoner.accountId);
     }
 
+    // 게임 상세정보 세팅
+    matchDetailInfo = (index) => {
+        // const { team1, team2, team1Identy, team2Identy, team1GameInfo, team2GameInfo, maxDamage } = this.state.matchList[index];
+        this.setState({
+            detailMatchListInfo: this.state.matchList[index],
+            detailOpen: true
+        });
+    }
+
+    // 모달 닫기
+    onHide = () => {
+        this.setState({
+            detailOpen: false
+        })
+    }
+
+    handleChange = (e) => {
+        this.setState({
+            summonerName: e.target.value
+        });
+    }
+
     render() {
         // const champions = champ.getChampions();
         const panes = [
-          { id: '0', menuItem: '전체', render: () => <Tab.Pane><MatchList matchList={this.state.matchList}/></Tab.Pane> },
-          { id: '1', menuItem: '솔로랭크', render: () => <Tab.Pane><MatchList matchList={this.state.matchList}/></Tab.Pane> },
-          { id: '2', menuItem: '자유랭크', render: () => <Tab.Pane><MatchList matchList={this.state.matchList}/></Tab.Pane> }
+          { id: '0', menuItem: '전체', render: () => <Tab.Pane><MatchList matchList={this.state.matchList} matchDetailInfo={this.matchDetailInfo}/></Tab.Pane> },
+          { id: '1', menuItem: '일반게임', render: () => <Tab.Pane><MatchList matchList={this.state.matchList} matchDetailInfo={this.matchDetailInfo}/></Tab.Pane> },
+          { id: '2', menuItem: '솔로랭크', render: () => <Tab.Pane><MatchList matchList={this.state.matchList} matchDetailInfo={this.matchDetailInfo}/></Tab.Pane> },
+          { id: '3', menuItem: '자유랭크', render: () => <Tab.Pane><MatchList matchList={this.state.matchList} matchDetailInfo={this.matchDetailInfo}/></Tab.Pane> }
         ];
 
         return (
@@ -313,6 +347,8 @@ class SearchContainer extends Component {
               />
               <Header
                 searchSummoner={this.searchSummoner}
+                handleChange={this.handleChange}
+                summonerName={this.state.summonerName}
               />
 
               {this.state.loadingSearch === false &&
@@ -348,6 +384,15 @@ class SearchContainer extends Component {
                   </Grid.Column>
                 </Grid.Row>
               </Grid>
+              }
+
+              {this.state.detailOpen &&
+                <MatchDetail
+                    detailMatchListInfo={this.state.detailMatchListInfo}
+                    open={this.state.detailOpen}
+                    searchSummoner={this.searchSummoner}
+                    onHide={this.onHide}
+                />
               }
             </div>
         );
