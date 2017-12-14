@@ -1,6 +1,6 @@
 # lol-board
 
-> This service is now available at bigshine-lol-board.herokuapp.com
+> This service is now available at https://bigshine-lol-board.herokuapp.com
 
 ## About
 
