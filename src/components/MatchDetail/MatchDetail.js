@@ -23,7 +23,7 @@ const teamStats = (team, teamGameInfo) => {
                 <b>{teamWin ? '승리팀' : '패배팀'}</b>
             </Table.Cell>
             <Table.Cell colSpan={2}>
-                <Image shape='rounded' size='mini' alt="" className='detail-image' src={`//z.fow.kr/img/common/score.png`} alt=''/> <b> {totalKill} / {totalDeath} / {totalAssist} </b>
+                <Image shape='rounded' size='mini' className='detail-image' src={`//z.fow.kr/img/common/score.png`} alt=''/> <b> {totalKill} / {totalDeath} / {totalAssist} </b>
             </Table.Cell>
             <Table.Cell colSpan={3}>
                 <b>
