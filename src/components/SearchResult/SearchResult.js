@@ -3,8 +3,7 @@ import { DonutChart, LaneStats, ChampStats, SummonerInfo } from '../';
 import './SearchResult.css';
 
 const champStats = (data, getMatchListByChampion) => {
-  return data.map((champList, i) => {
-      if(i < 4){
+    return data.map((champList, i) => {
         return (
             <ChampStats
               champList={champList}
@@ -12,8 +11,7 @@ const champStats = (data, getMatchListByChampion) => {
               key={i}
             />
         );
-      }
-  });
+    });
 };
 
 const SearchResult = ({ summoner, totalMatchInfo, myInfo, totalStats, getMatchListByChampion, soloRating, freeRating }) => {
@@ -52,7 +50,7 @@ const SearchResult = ({ summoner, totalMatchInfo, myInfo, totalStats, getMatchLi
 
             <td>
               <DonutChart
-                  totalMatchInfo={totalMatchInfo}
+                totalMatchInfo={totalMatchInfo}
               />
             </td>
           </tr>
