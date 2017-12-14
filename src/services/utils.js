@@ -228,3 +228,14 @@ export function sortInfoList(infoList) {
 export function setNumberFormat(number) {
     return Number(number).toLocaleString('en');
 }
+
+export function getMaxDamage(participants) {
+    let damageArr = [];
+    participants.forEach((summoner, i) => {
+        damageArr = damageArr.concat(summoner.stats.totalDamageDealtToChampions);
+    });
+
+    const maxDamage = Math.max.apply(null, damageArr);
+
+    return maxDamage;
+}
