@@ -119,11 +119,11 @@ export function laneStats(matchList) {
     });
 
     obj = {
-        top: 100 * top / total + ' %',
-        jg : 100 * jg / total + ' %',
-        mid: 100 * mid / total + ' %',
-        ad: 100 * ad / total + ' %',
-        sp: 100 * sp / total + ' %'
+        top: (100 * top / total).toFixed(0) + ' %',
+        jg : (100 * jg / total).toFixed(0) + ' %',
+        mid: (100 * mid / total).toFixed(0) + ' %',
+        ad: (100 * ad / total).toFixed(0) + ' %',
+        sp: (100 * sp / total).toFixed(0) + ' %'
     }
 
     return obj;
