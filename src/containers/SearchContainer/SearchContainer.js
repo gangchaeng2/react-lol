@@ -32,7 +32,6 @@ class SearchContainer extends Component {
             freeRating: {},
             matchList: [],
             myInfo: [],
-            champStat: [],
             totalMatchInfo: {
                 wins: 0,
                 losses: 0,
@@ -373,7 +372,7 @@ class SearchContainer extends Component {
                           soloRating={this.state.soloRating}
                           freeRating={this.state.freeRating}
                           totalMatchInfo={this.state.totalMatchInfo}
-                          myInfo={this.state.myInfo.championStat}
+                          myInfo={this.state.myInfo.championStat.slice(0, 4)}
                           totalStats={this.state.totalStats}
                           getMatchListByChampion={this.getMatchListDetailInfo}
                       />
