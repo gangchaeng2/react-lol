@@ -82,7 +82,7 @@ class SearchContainer extends Component {
            // 랭크 정보 검색
            self.getRankInfo(id);
            // 매치 리스트 검색
-           self.getMatchListDetailInfo('recent', accountId);
+           self.getMatchListDetailInfo(0, accountId);
        })
        .catch(function(error){
            console.error(error);
@@ -307,7 +307,7 @@ class SearchContainer extends Component {
             loadingTab: true,
             setQueueType: index
         });
-        this.getMatchListDetailInfo(e.target.text, this.state.summoner.accountId);
+        this.getMatchListDetailInfo(index, this.state.summoner.accountId);
     }
 
     // 게임 상세정보 세팅
