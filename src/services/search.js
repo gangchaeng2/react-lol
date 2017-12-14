@@ -40,16 +40,15 @@ export async function getGameListInfo(list) {
 
 // 게임 리스트
 export function getMatchList(championId, accountId) {
-    championId = encodeURIComponent(championId);
-    if(championId === 'recent' || championId === '전체') {
+    if(championId === 0 || championId === '전체') {
         return axios.get(`https://cors-anywhere.herokuapp.com/https://kr.api.riotgames.com/lol/match/v3/matchlists/by-account/${accountId}/recent?api_key=RGAPI-d30e3e08-348c-45dd-a395-8da08322a7e8`);
-    } else if(championId === '일반게임'){
+    } else if(championId === 1) {
         // 일반게임 최근 20경기
         return axios.get(`https://cors-anywhere.herokuapp.com/https://kr.api.riotgames.com/lol/match/v3/matchlists/by-account/${accountId}?queue=430&endIndex=20&season=9&api_key=RGAPI-d30e3e08-348c-45dd-a395-8da08322a7e8`);
-    } else if(championId === '솔로랭크'){
+    } else if(championId === 2) {
         // 솔로랭크 최근 20경기
         return axios.get(`https://cors-anywhere.herokuapp.com/https://kr.api.riotgames.com/lol/match/v3/matchlists/by-account/${accountId}?queue=420&endIndex=20&season=9&api_key=RGAPI-d30e3e08-348c-45dd-a395-8da08322a7e8`);
-    } else if(championId === '자유랭크'){
+    } else if(championId === 3) {
         // 솔로랭크 최근 20경기
         return axios.get(`https://cors-anywhere.herokuapp.com/https://kr.api.riotgames.com/lol/match/v3/matchlists/by-account/${accountId}?queue=440&endIndex=20&season=9&api_key=RGAPI-d30e3e08-348c-45dd-a395-8da08322a7e8`);
     } else {
