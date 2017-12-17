@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import { Grid, Segment, Dimmer, Loader, Tab } from 'semantic-ui-react';
-import $ from 'jquery';
 
 import { Header, MatchList, SearchResult, MatchDetail } from '../../components';
 import * as service from '../../services/search';
@@ -259,14 +258,7 @@ class SearchContainer extends Component {
             detailOpen: false
         })
     }
-
-    componentDidMount() {
-        $('.ui.modal>.close').click(function(){
-            alert('1');
-        });
-    }
     
-
     render() {
         const { loadingSearch, loadingTab, errorCheck, summonerInfo, summonerStatus, summonerRankInfo, donutChartObj, myInfoObj, summonerLaneStats, detailMatchList, detailMatchInfo, detailOpen, setQueueType } = this.state;
         const { searchSummoner, showDetailMatchInfo, hideDetailMatchInfo, onSelectByQueueType, getMatchListDetailInfo, handleChange } = this;
