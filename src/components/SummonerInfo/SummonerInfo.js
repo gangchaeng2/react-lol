@@ -7,6 +7,8 @@ const rankItem = (rankInfoList) => {
     let rankInfoChange = [];
     if(rankInfoList.length > 1) {
         rankInfoChange = rankInfoChange.concat(rankInfoList[1]).concat(rankInfoList[0]);
+    } else {
+        rankInfoChange = rankInfoList;
     }
 
     return rankInfoChange.map((rankInfo, i) => {
