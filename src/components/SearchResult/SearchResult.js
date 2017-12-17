@@ -14,7 +14,7 @@ const champStats = (data, getMatchListByChampion) => {
     });
 };
 
-const SearchResult = ({ summoner, totalMatchInfo, myInfo, totalStats, getMatchListByChampion, soloRating, freeRating }) => {
+const SearchResult = ({ summonerInfo, summonerStatus, donutChartObj, myInfoObj, summonerLaneStats, getMatchListDetailInfo, summonerRankInfo }) => {
     return (
       <table className="ui celled table">
         <thead>
@@ -30,27 +30,26 @@ const SearchResult = ({ summoner, totalMatchInfo, myInfo, totalStats, getMatchLi
           <tr>
             <td>
               <SummonerInfo
-                  summoner={summoner}
-                  soloRating={soloRating}
-                  freeRating={freeRating}
+                  summonerInfo={summonerInfo}
+                  summonerRankInfo={summonerRankInfo}
               />
             </td>
 
             <td className="center aligned">
               <div className="ui divided items">
-                {champStats(myInfo, getMatchListByChampion)}
+                {champStats(myInfoObj, getMatchListDetailInfo)}
               </div>
             </td>
 
             <td className="center aligned">
               <LaneStats
-                totalStats={totalStats}
+                  summonerLaneStats={summonerLaneStats}
               />
             </td>
 
             <td>
               <DonutChart
-                totalMatchInfo={totalMatchInfo}
+                  donutChartObj={donutChartObj}
               />
             </td>
           </tr>

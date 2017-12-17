@@ -5,7 +5,7 @@ import * as utils from '../../services/utils';
 
 import './Match.css';
 
-const Match = ({ match, matchDetailInfo, index }) => {
+const Match = ({ match, showDetailMatchInfo, index }) => {
     const lastDate = new Date(match.gameCreation);
 
     let strDate = (lastDate.getUTCMonth()) + '달 전';
@@ -21,7 +21,7 @@ const Match = ({ match, matchDetailInfo, index }) => {
 
     return (
       <tbody>
-          <tr className={match.stats.win ? "win-match" : "loss-match"} onClick={() => matchDetailInfo(index)}>
+          <tr className={match.stats.win ? "win-match" : "loss-match"} onClick={() => showDetailMatchInfo(index)}>
             <td className="center aligned">
                 {match.stats.win ? "Win" : "Loss"}
             </td>
@@ -49,10 +49,10 @@ const Match = ({ match, matchDetailInfo, index }) => {
                 <table className='detail-table'>
                     <tbody>
                           <TeamInfo
-                              team={match.team1}
+                              team={match.teamArr[0]}
                           />
                           <TeamInfo
-                              team={match.team2}
+                              team={match.teamArr[1]}
                           />
                     </tbody>
                 </table>

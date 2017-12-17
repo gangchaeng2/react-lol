@@ -19,7 +19,7 @@ class DonutChart extends Component {
       const halfsize = (this.props.size * 0.5);
       const radius = halfsize - (this.props.strokewidth * 0.5);
       const circumference = 2 * Math.PI * radius;
-      const strokeval = ((this.props.totalMatchInfo.wins * circumference) / (this.props.totalMatchInfo.circleSize));
+      const strokeval = ((this.props.donutChartObj.wins * circumference) / (this.props.donutChartObj.circleSize));
       const dashval = (strokeval + ' ' + circumference);
 
       const trackstyle = {strokeWidth: this.props.strokewidth};
@@ -33,11 +33,11 @@ class DonutChart extends Component {
             <circle r={radius} cx={halfsize} cy={halfsize} transform={rotateval} style={indicatorstyle} className="donutchart-indicator"/>
             <text className="donutchart-text" x={halfsize} y={halfsize} style={{textAnchor:'middle'}} >
               <tspan className="donutchart-text-val"><br/></tspan>
-              <tspan className="donutchart-text-percent">{this.props.totalMatchInfo.percent}</tspan>
-              <tspan className="donutchart-text-label" x={halfsize} y={halfsize+30}>{this.props.totalMatchInfo.label}</tspan>
+              <tspan className="donutchart-text-percent">{this.props.donutChartObj.percent}</tspan>
+              <tspan className="donutchart-text-label" x={halfsize} y={halfsize+30}>{this.props.donutChartObj.label}</tspan>
             </text>
           </svg><br/>
-        <h2 className='total-stats'>{this.props.totalMatchInfo.totalKill} / <span className='total-death'>{this.props.totalMatchInfo.totalDeath}</span> / {this.props.totalMatchInfo.totalAssist} ({this.props.totalMatchInfo.totalAverage}:1)</h2>
+        <h2 className='total-stats'>{this.props.donutChartObj.totalKill} / <span className='total-death'>{this.props.donutChartObj.totalDeath}</span> / {this.props.donutChartObj.totalAssist} ({this.props.donutChartObj.totalAverage}:1)</h2>
         </div>
     );
   }
