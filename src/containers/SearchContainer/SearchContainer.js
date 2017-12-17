@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import { Grid, Segment, Dimmer, Loader, Tab } from 'semantic-ui-react';
+import $ from 'jquery';
 
 import { Header, MatchList, SearchResult, MatchDetail } from '../../components';
 import * as service from '../../services/search';
@@ -19,151 +20,86 @@ class SearchContainer extends Component {
             setQueueType: 0,
             loadingTab: null,
             loadingSearch: null,
-            summonerName: '',
-            summoner: {
-                id: null,
-                name: undefined,
-                accountId: null,
-                profileIconId: null,
-                summonerLevel: null,
-                revisionDate: null,
-                status: null
-            },
-            soloRating: {},
-            freeRating: {},
-            matchList: [],
-            myInfo: [],
-            totalMatchInfo: {
+            summonerInfo: {},
+            summonerStatus: false,
+            summonerRankInfo: [],
+            summonerMatchList: [],
+            summonerLaneStats: {},
+            detailMatchList: [],
+            myInfoObj: [],
+            donutChartObj: {
                 wins: 0,
                 losses: 0,
                 label: null,
                 percent: null,
                 circleSize: 20
             },
-            detailMatchListInfo: {},
+            detailMatchInfo: {},
             recentSummoner: arr
         };
     }
 
     // 소환사 검색
-    getSummonerInfo = (summonerName)  => {
+    getSummonerInfo = async(summonerName)  => {
         const self = this;
-        service.getSummoner(summonerName)
-        .then(async function(response){
-           // 소환사 정보
-           const { id, accountId, profileIconId, summonerLevel, revisionDate, name } = response.data;
 
-           const lastDate = new Date(revisionDate);
-           const strDate = lastDate.toLocaleString();
-
-           // 소환사 현재 게임진행 상태
-           const currentStatus = await service.getCurrentStatus(id)
-           .then(function(res){
-               return true;
-           })
-           .catch(function(error){
-               console.error('this user not in game');
-               return false;
-           });
-
-           // state 설정
-           self.setState({
-               summonerName: name,
-               summoner: {
-                 id,
-                 name,
-                 accountId,
-                 profileIconId,
-                 summonerLevel,
-                 revisionDate: strDate,
-                 status: currentStatus
-               }
-           });
-           // 랭크 정보 검색
-           self.getRankInfo(id);
-           // 매치 리스트 검색
-           self.getMatchListDetailInfo(0, accountId);
-       })
-       .catch(function(error){
-           console.error(error);
+        const summonerInfo = await service.getSummoner(summonerName)
+        .then(function(response) {
+            return response.data;
+        })
+        .catch(function(error) {
            self.setState({
               loadingSearch: false,
               errorCheck: true
            });
-           return;
-       });
-    }
-
-    // 랭크 정보 검색
-    getRankInfo = async (id) => {
-        // 티어 승,패 정보
-        const summonerRate = await service.getSummoneRating(id);
-           
-        // 솔로랭크
-        const soloRankRate = summonerRate.data.filter(function(item){
-            return item.queueType === "RANKED_SOLO_5x5";
+           return false;
         });
-        if(soloRankRate[0] !== null && soloRankRate[0] !== undefined) {
-            // 랭크 티어 이미지
-            let soloTierNum = 1;
-            soloTierNum = utils.getTierNum(soloRankRate[0].rank);
-            let soloTierSrc = `//opgg-static.akamaized.net/images/medals/${soloRankRate[0].tier}_${soloTierNum}.png`;
-            soloTierSrc = soloTierSrc.toLowerCase();
-            this.setState({
-                soloRating: {
-                    tier: soloRankRate[0].tier,
-                    soloTierSrc: soloTierSrc,
-                    rank: soloRankRate[0].rank,
-                    leagueName: soloRankRate[0].leagueName,
-                    leaguePoints: soloRankRate[0].leaguePoints,
-                    wins: soloRankRate[0].wins,
-                    losses: soloRankRate[0].losses
-                }
-            });
-        }
 
-        // 자유랭크
-        const freeRankRate = summonerRate.data.filter(function(item){
-            return item.queueType === "RANKED_FLEX_SR";
-        });
-        if(freeRankRate[0] !== null && freeRankRate[0] !== undefined) {
-            let freeTierNum = 1;
-            freeTierNum = utils.getTierNum(freeRankRate[0].rank);
-            let freeTierSrc = `//opgg-static.akamaized.net/images/medals/${freeRankRate[0].tier}_${freeTierNum}.png`;
-            freeTierSrc = freeTierSrc.toLowerCase();
+        if(!this.state.errorCheck) {
+            const { id, accountId } = summonerInfo;
+
+            // 랭크 정보
+            const summonerRankInfo = await service.getSummoneRating(id);
+            // 현재 게임상태
+            const summonerStatus = await service.getCurrentStatus(id)
+                                        .then(function(response) {
+                                            console.log(response);
+                                        })
+                                        .catch(function(error) {
+                                            console.log('this user not in Game');
+                                            return false;
+                                        });
+            // 소환사 매치 리스트
+            const summonerMatchList = await service.getMatchList(0, 0, accountId);
+            const { matches } = summonerMatchList.data;
+
+            // 라인 정보 저장
+            const summonerLaneStats = utils.laneStats(matches);
 
             this.setState({
-                freeRating: {
-                    tier: freeRankRate[0].tier,
-                    freeTierSrc: freeTierSrc,
-                    rank: freeRankRate[0].rank,
-                    leagueName: freeRankRate[0].leagueName,
-                    leaguePoints: freeRankRate[0].leaguePoints,
-                    wins: freeRankRate[0].wins,
-                    losses: freeRankRate[0].losses
-                }
+                summonerInfo: summonerInfo,
+                summonerStatus: summonerStatus,
+                summonerRankInfo: summonerRankInfo.data,
+                summonerLaneStats,
+                summonerMatchList: matches
             });
+
+            //  매치 상세 조회
+            this.getMatchListDetailInfo(matches);
         }
     }
 
     // 매치 리스트 검색
-    getMatchListDetailInfo = async (championId, accountId) => {
+    getMatchListDetailInfo = async (matchList) => {
         const self = this;
-        // 챔피언, 랭크별 매치 리스트 검색
-        let matchList = [];
-        matchList = await service.getMatchList(championId, accountId);
-        matchList = matchList.data.matches;
-        // 라인 정보 저장
-        const totalStats = utils.laneStats(matchList);
-
         // 챔피언 정보 호출
         const champions = champ.getChampions();
         const matchListInfo = await service.getGameListInfo(matchList);
 
-        let myInfos = [];
-        let matchLists = [];
-        let myInfoList = {};
+        let myInfoList = [];
+        let myInfoObj = {};
         let wins = 0;
+        let detailMatchList = [];
 
         matchListInfo.forEach((match, i) => {
             const { queueId, gameCreation, gameDuration, participants, participantIdentities, teams } = match;
@@ -175,7 +111,7 @@ class SearchContainer extends Component {
             // 검색한 소환사 게임정보
             const myGameInfo = participantIdentities
             .filter(function(item) {
-                return item.player.accountId === self.state.summoner.accountId;
+                return item.player.accountId === self.state.summonerInfo.accountId;
             });
             // 게임 내 유저번호
             const playerId = myGameInfo[0].participantId;
@@ -186,17 +122,32 @@ class SearchContainer extends Component {
             if(myInfo[0].stats.win === true) {
                 wins = wins + 1;
             }
-            const championData = champions.filter(function(item){
+            const championData = champions.filter(function(item) {
                 return item.title === myInfo[0].championId;
             });
 
             // 팀 정보
-            const team1 = participants.filter(function(item){
+            const team1 = participants.filter(function(item) {
                 return item.teamId === 100;
             });
-            const team2 = participants.filter(function(item){
+            const team2 = participants.filter(function(item) {
                   return item.teamId === 200;
             });
+
+            const team1Obj = {
+                summonersInfo: team1,
+                gameInfo: teams[0],
+                identity: participantIdentities.slice(0, 5)
+            };
+
+            const team2Obj = {
+                summonersInfo: team2,
+                gameInfo: teams[1],
+                identity: participantIdentities.slice(5, 10)
+            };
+
+            let teamArr = [];
+            teamArr = teamArr.concat(team1Obj).concat(team2Obj);
 
             // 매치 내 최다 대미지
             const maxDamage = utils.getMaxDamage(participants);
@@ -211,50 +162,43 @@ class SearchContainer extends Component {
                   gameType: gameType,
                   gameCreation: realGameCreation,
                   gameDuration: (gameDuration / 60).toFixed(0),
-                  team1: team1,
-                  team2: team2,
-                  team1Identy: participantIdentities.slice(0, 5),
-                  team2Identy: participantIdentities.slice(5, 10),
-                  team1GameInfo: teams[0],
-                  team2GameInfo: teams[1],
+                  teamArr: teamArr,
                   maxDamage: maxDamage
             };
 
             // 매치 상세정보 객체를 배열에 저장
-            myInfos = myInfos.concat(myInfo[0]);
-            matchLists = matchLists.concat(matchList);
+            myInfoList = myInfoList.concat(myInfo[0]);
+            detailMatchList = detailMatchList.concat(matchList);
         });
 
         // 매치 리스트에서 내가 한 챔피언 저장
-        let champArr = myInfos.map((obj, i) => {
+        let champArr = myInfoList.map((obj, i) => {
             return obj.championId;
         });
         // 매치 리스트에서 중복 챔피언 제거
         champArr = utils.uniqueArr(champArr);
 
         // 매치 리스트 챔피언 승/패/KDA 저장
-        myInfoList = utils.setmyInfoList(myInfos, champArr);
-        myInfoList = utils.sortInfoList(myInfoList);
+        myInfoObj = utils.setmyInfoList(myInfoList, champArr);
 
         // 도넛 차트 출력을 위한 객체
-        const totalMatchInfo = {
-            totalKill: myInfoList.totalKill,
-            totalDeath: myInfoList.totalDeath,
-            totalAssist: myInfoList.totalAssist,
-            totalAverage: myInfoList.totalAverage,
+        const donutChartObj = {
+            totalKill: myInfoObj.totalKill,
+            totalDeath: myInfoObj.totalDeath,
+            totalAssist: myInfoObj.totalAssist,
+            totalAverage: myInfoObj.totalAverage,
             wins: wins,
-            losses: matchListInfo.length - wins,
-            label: (wins) +'승 / ' + (matchListInfo.length - wins) + '패',
-            percent: 100 * (wins) / matchListInfo.length + " %",
-            circleSize: matchListInfo.length
+            losses: myInfoObj.length - wins,
+            label: (wins) +'승 / ' + (myInfoList.length - wins) + '패',
+            percent: 100 * (wins) / myInfoList.length + " %",
+            circleSize: myInfoList.length
         }
 
         // state 설정
         this.setState({
-            matchList: matchLists,
-            myInfo: myInfoList,
-            totalMatchInfo: totalMatchInfo,
-            totalStats: totalStats,
+            detailMatchList: detailMatchList,
+            myInfoObj: myInfoObj,
+            donutChartObj: donutChartObj,
             loadingSearch: false,
             loadingTab: false
         });
@@ -264,24 +208,12 @@ class SearchContainer extends Component {
     searchSummoner = (summonerName) => {
         // state 초기화
         this.setState({
-            summonerName: summonerName,
-            soloRating: {},
-            freeRating: {},
             loadingSearch: true,
-            matchList: [],
-            totalMatchInfo: {
-                wins: 0,
-                losses: 0,
-                label: null,
-                percent: null
-            },
-            setQueueType: 0,
-            myInfo: [],
-            detailOpen: false,
-            errorCheck: false
+            detailOpen: false
         });
 
         this.getSummonerInfo(summonerName);
+        document.getElementById('summonerName').value = summonerName;
     }
 
     // 챔피언 selectBox 선택
@@ -290,7 +222,7 @@ class SearchContainer extends Component {
     }
 
     // 매치 정보 tab 인덱스 클릭
-    onSelectByQueueType = (e) => {
+    onSelectByQueueType = async(e) => {
         let index = 0;
 
         if(e.target.text === '전체') {
@@ -307,65 +239,70 @@ class SearchContainer extends Component {
             loadingTab: true,
             setQueueType: index
         });
-        this.getMatchListDetailInfo(index, this.state.summoner.accountId);
+
+        const summonerMatchList = await service.getMatchList(index, 0, this.state.summonerInfo.accountId);
+        const { matches } = summonerMatchList.data;
+        this.getMatchListDetailInfo(matches);
     }
 
     // 게임 상세정보 세팅
-    matchDetailInfo = (index) => {
+    showDetailMatchInfo = (index) => {
         this.setState({
-            detailMatchListInfo: this.state.matchList[index],
+            detailMatchInfo: this.state.detailMatchList[index],
             detailOpen: true
         });
     }
 
     // 게임 상세정보 닫기
-    onHide = () => {
+    hideDetailMatchInfo = () => {
         this.setState({
             detailOpen: false
         })
     }
 
-    handleChange = (e) => {
-        this.setState({
-            [e.target.name]: e.target.value
-        })
+    componentDidMount() {
+        $('.ui.modal>.close').click(function(){
+            alert('1');
+        });
     }
+    
 
     render() {
+        const { loadingSearch, loadingTab, errorCheck, summonerInfo, summonerStatus, summonerRankInfo, donutChartObj, myInfoObj, summonerLaneStats, detailMatchList, detailMatchInfo, detailOpen, setQueueType } = this.state;
+        const { searchSummoner, showDetailMatchInfo, hideDetailMatchInfo, onSelectByQueueType, getMatchListDetailInfo, handleChange } = this;
         // const champions = champ.getChampions();
         const panes = [
-          { id: '0', menuItem: '전체', render: () => <Tab.Pane><MatchList matchList={this.state.matchList} matchDetailInfo={this.matchDetailInfo}/></Tab.Pane> },
-          { id: '1', menuItem: '일반게임', render: () => <Tab.Pane><MatchList matchList={this.state.matchList} matchDetailInfo={this.matchDetailInfo}/></Tab.Pane> },
-          { id: '2', menuItem: '솔로랭크', render: () => <Tab.Pane><MatchList matchList={this.state.matchList} matchDetailInfo={this.matchDetailInfo}/></Tab.Pane> },
-          { id: '3', menuItem: '자유랭크', render: () => <Tab.Pane><MatchList matchList={this.state.matchList} matchDetailInfo={this.matchDetailInfo}/></Tab.Pane> }
+          { id: '0', menuItem: '전체', render: () => <Tab.Pane><MatchList matchList={detailMatchList} showDetailMatchInfo={showDetailMatchInfo}/></Tab.Pane> },
+          { id: '1', menuItem: '일반게임', render: () => <Tab.Pane><MatchList matchList={detailMatchList} showDetailMatchInfo={showDetailMatchInfo}/></Tab.Pane> },
+          { id: '2', menuItem: '솔로랭크', render: () => <Tab.Pane><MatchList matchList={detailMatchList} showDetailMatchInfo={showDetailMatchInfo}/></Tab.Pane> },
+          { id: '3', menuItem: '자유랭크', render: () => <Tab.Pane><MatchList matchList={detailMatchList} showDetailMatchInfo={showDetailMatchInfo}/></Tab.Pane> }
         ];
 
         return (
             <div>
               <Dimmer
-                active={this.state.loadingSearch}
+                active={loadingSearch}
                 content={<Loader indeterminate size="massive">Searching Summoner</Loader>}
                 page
               />
               <Header
-                searchSummoner={this.searchSummoner}
-                handleChange={this.handleChange}
-                summonerName={this.state.summonerName}
+                searchSummoner={searchSummoner}
+                handleChange={handleChange}
               />
 
-            {(this.state.loadingSearch === false && this.state.errorCheck === false) &&
+            {(loadingSearch === false && errorCheck === false) &&
               <Grid>
                 <Grid.Row centered>
                   <Grid.Column width={10}>
                     <Segment>
                       <SearchResult
-                          summoner={this.state.summoner}
-                          soloRating={this.state.soloRating}
-                          freeRating={this.state.freeRating}
-                          totalMatchInfo={this.state.totalMatchInfo}
-                          myInfo={this.state.myInfo.championStat.slice(0, 4)}
-                          totalStats={this.state.totalStats}
-                          getMatchListByChampion={this.getMatchListDetailInfo}
+                          summonerInfo={summonerInfo}
+                          summonerStatus={summonerStatus}
+                          summonerRankInfo={summonerRankInfo}
+                          donutChartObj={donutChartObj}
+                          myInfoObj={myInfoObj.championStat.slice(0, 4)}
+                          summonerLaneStats={summonerLaneStats}
+                          getMatchListDetailInfo={getMatchListDetailInfo}
                       />
                     </Segment>
                   </Grid.Column>
@@ -374,29 +311,29 @@ class SearchContainer extends Component {
                 <Grid.Row centered>
                   <Grid.Column width={12}>
                     <Segment>
-                      {this.state.loadingTab ?
+                      {loadingTab ?
                       (
                         <Dimmer active inverted><Loader inverted content='Loading' /></Dimmer>
                       ) : (
                         <Dimmer><Loader inverted content='Loading' /></Dimmer>)
                       }
-                      <Tab panes={panes} onTabChange={this.onSelectByQueueType} activeIndex={this.state.setQueueType}/>
+                      <Tab panes={panes} onTabChange={onSelectByQueueType} activeIndex={setQueueType}/>
                     </Segment>
                   </Grid.Column>
                 </Grid.Row>
               </Grid>
               }
 
-              {this.state.errorCheck &&
+              {errorCheck &&
                   <div>검색된 소환사가 없습니다. 소환사명을 확인해주세요.</div>
               }
 
-              {this.state.detailOpen &&
+              {detailOpen &&
                 <MatchDetail
-                    detailMatchListInfo={this.state.detailMatchListInfo}
-                    open={this.state.detailOpen}
-                    searchSummoner={this.searchSummoner}
-                    onHide={this.onHide}
+                    detailMatchInfo={detailMatchInfo}
+                    open={detailOpen}
+                    searchSummoner={searchSummoner}
+                    hideDetailMatchInfo={hideDetailMatchInfo}
                 />
               }
             </div>
