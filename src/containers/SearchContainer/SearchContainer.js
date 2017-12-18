@@ -187,9 +187,9 @@ class SearchContainer extends Component {
             totalAssist: myInfoObj.totalAssist,
             totalAverage: myInfoObj.totalAverage,
             wins: wins,
-            losses: myInfoObj.length - wins,
+            losses: myInfoList.length - wins,
             label: (wins) +'승 / ' + (myInfoList.length - wins) + '패',
-            percent: 100 * (wins) / myInfoList.length + " %",
+            percent: (100 * (wins) / myInfoList.length).toFixed(0) + " %",
             circleSize: myInfoList.length
         }
 
@@ -256,9 +256,9 @@ class SearchContainer extends Component {
     hideDetailMatchInfo = () => {
         this.setState({
             detailOpen: false
-        })
+        });
     }
-    
+
     render() {
         const { loadingSearch, loadingTab, errorCheck, summonerInfo, summonerStatus, summonerRankInfo, donutChartObj, myInfoObj, summonerLaneStats, detailMatchList, detailMatchInfo, detailOpen, setQueueType } = this.state;
         const { searchSummoner, showDetailMatchInfo, hideDetailMatchInfo, onSelectByQueueType, getMatchListDetailInfo, handleChange } = this;
