@@ -61,9 +61,6 @@ class SearchContainer extends Component {
             const summonerRankInfo = await service.getSummoneRating(id);
             // 현재 게임상태
             const summonerStatus = await service.getCurrentStatus(id)
-                                        .then(function(response) {
-                                            console.log(response);
-                                        })
                                         .catch(function(error) {
                                             console.log('this user not in Game');
                                             return false;
