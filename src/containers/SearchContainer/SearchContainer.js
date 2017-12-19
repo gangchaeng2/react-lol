@@ -208,11 +208,12 @@ class SearchContainer extends Component {
         // state 초기화
         this.setState({
             loadingSearch: true,
-            detailOpen: false
+            detailOpen: false,
+            errorCheck: false
         });
 
-        this.getSummonerInfo(summonerName);
         document.getElementById('summonerName').value = summonerName;
+        this.getSummonerInfo(summonerName);
     }
 
     // 챔피언 selectBox 선택
