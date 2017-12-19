@@ -214,8 +214,16 @@ class SearchContainer extends Component {
     }
 
     // 챔피언 selectBox 선택
-    onSelectByChampion = (e) => {
-        this.getMatchListDetailInfo(e.target.title);
+    onSelectByChampion = async(champion) => {
+        this.setState({
+            setQueueType: 4,
+            loadingTab: true,
+            detailOpen: false
+        });
+        const summonerMatchList = await service.getMatchList(4, champion, this.state.summonerInfo.accountId);
+        
+        const { matches } = summonerMatchList.data;
+        this.getMatchListDetailInfo(matches);
     }
 
     // 매치 정보 tab 인덱스 클릭
@@ -230,6 +238,9 @@ class SearchContainer extends Component {
             index = 2;
         } else if(e.target.text === '자유랭크') {
             index = 3;
+        } else {
+            alert('상단의 챔피언을 클릭하면 활성화 됩니다.');
+            return;
         }
 
         this.setState({
@@ -259,13 +270,14 @@ class SearchContainer extends Component {
 
     render() {
         const { loadingSearch, loadingTab, errorCheck, summonerInfo, summonerStatus, summonerRankInfo, donutChartObj, myInfoObj, summonerLaneStats, detailMatchList, detailMatchInfo, detailOpen, setQueueType } = this.state;
-        const { searchSummoner, showDetailMatchInfo, hideDetailMatchInfo, onSelectByQueueType, getMatchListDetailInfo, handleChange } = this;
+        const { searchSummoner, showDetailMatchInfo, hideDetailMatchInfo, onSelectByQueueType, handleChange, onSelectByChampion } = this;
         // const champions = champ.getChampions();
         const panes = [
           { id: '0', menuItem: '전체', render: () => <Tab.Pane><MatchList matchList={detailMatchList} showDetailMatchInfo={showDetailMatchInfo}/></Tab.Pane> },
           { id: '1', menuItem: '일반게임', render: () => <Tab.Pane><MatchList matchList={detailMatchList} showDetailMatchInfo={showDetailMatchInfo}/></Tab.Pane> },
           { id: '2', menuItem: '솔로랭크', render: () => <Tab.Pane><MatchList matchList={detailMatchList} showDetailMatchInfo={showDetailMatchInfo}/></Tab.Pane> },
-          { id: '3', menuItem: '자유랭크', render: () => <Tab.Pane><MatchList matchList={detailMatchList} showDetailMatchInfo={showDetailMatchInfo}/></Tab.Pane> }
+          { id: '3', menuItem: '자유랭크', render: () => <Tab.Pane><MatchList matchList={detailMatchList} showDetailMatchInfo={showDetailMatchInfo}/></Tab.Pane> },
+          { id: '4', menuItem: '챔피언', render: () => <Tab.Pane><MatchList matchList={detailMatchList} showDetailMatchInfo={showDetailMatchInfo}/></Tab.Pane> }
         ];
 
         return (
@@ -292,7 +304,7 @@ class SearchContainer extends Component {
                           donutChartObj={donutChartObj}
                           myInfoObj={myInfoObj.championStat.slice(0, 4)}
                           summonerLaneStats={summonerLaneStats}
-                          getMatchListDetailInfo={getMatchListDetailInfo}
+                          getMatchListDetailInfo={onSelectByChampion}
                       />
                     </Segment>
                   </Grid.Column>
