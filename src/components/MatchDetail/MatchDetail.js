@@ -116,7 +116,7 @@ const MatchDetail = ({ detailMatchInfo, open, hideDetailMatchInfo, searchSummone
     // console.log(detailMatchInfo.teamArr);
 
     return (
-      <Modal dimmer={true} open={open} closeIcon={true} onClose={hideDetailMatchInfo} closeOnDimmerClick={hideDetailMatchInfo}>
+      <Modal dimmer={true} open={open} closeIcon={true} onClose={hideDetailMatchInfo} closeOnDimmerClick={false}>
         <Modal.Content image scrolling className='detail-game'>
           <Table className='detail-table'>
             <Table.Header>
