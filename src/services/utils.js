@@ -129,6 +129,15 @@ export function laneStats(matchList) {
     return obj;
 }
 
+// 게임수로 정렬
+export function sortInfoList(infoList) {
+    infoList.championStat.sort(function(obj1, obj2) {
+      return obj1.totalGame > obj2.totalGame ? -1 : obj1.totalGame < obj2.totalGame ? 1 : 0;
+    });
+  
+    return infoList;
+}
+
 // 게임정보 저장
 export function setmyInfoList(myInfo, champArr) {
     let championStats = {
@@ -212,16 +221,8 @@ export function setmyInfoList(myInfo, champArr) {
       championStats.championStat = championStats.championStat.concat(championStat);
     });
 
+    championStats = sortInfoList(championStats);
     return championStats;
-}
-
-// 게임수로 정렬
-export function sortInfoList(infoList) {
-  infoList.championStat.sort(function(obj1, obj2) {
-    return obj1.totalGame > obj2.totalGame ? -1 : obj1.totalGame < obj2.totalGame ? 1 : 0;
-  });
-
-  return infoList;
 }
 
 // 숫자포맷
