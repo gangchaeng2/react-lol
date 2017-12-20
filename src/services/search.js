@@ -3,7 +3,7 @@ import axios from 'axios';
 // 소환사 정보
 export function getSummoner(name) {
     name = encodeURIComponent(name);
-    return axios.get(`https://kr.api.riotgames.com/lol/summoner/v3/summoners/by-name/${name}?api_key=RGAPI-dcca8000-3a5c-b109-951f-b23cdbd6f531`);
+    return axios.get(`https://kr.api.riotgames.com/lol/summoner/v3/summoners/by-name/${name}?api_key=RGAPI-26861967-6764-4b8f-a112-4ae5dc1234b9`);
 }
 
 // 소환사 레이팅
